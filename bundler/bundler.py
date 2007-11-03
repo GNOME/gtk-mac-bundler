@@ -67,12 +67,13 @@ class Bundler:
         modulespath = self.project.get_bundle_path("Contents/Resources/lib/pango/" +
                                                    "${pkg:pango:pango_module_version}/"+
                                                    "modules")
+        modulespath = utils.evaluate_pkgconfig_variables (modulespath)
 
         import tempfile
         fd, tmp_filename = tempfile.mkstemp()
         f = os.fdopen(fd, "w")
         f.write("[Pango]\n")
-        f.write("ModulesPath=" + utils.evaluate_pkgconfig_variables (modulespath))
+        f.write("ModulesPath=" + modulespath)
         f.write("\n")
         f.close()
 
@@ -299,13 +300,16 @@ class Bundler:
             paths = self.list_copied_binaries()
 
     def strip_debugging(self):
-        path = self.project.get_bundle_path("Contents/Resources/lib")
-        os.popen3("strip -x " + path + "/*.dylib")
-
-        path = self.project.evaluate_path(self.project.get_main_binary().dest)
-        os.popen3("strip -ur " + path)
-
-        # FIXME: We could also strip the modules (pango + gtk)
+        paths = self.list_copied_binaries()
+        for path in paths:
+            if path.endswith(".dylib") or path.endswith(".so"):
+                os.chmod(path, 0644)
+                os.system("strip -x " + path + " 2>/dev/null")
+                os.chmod(path, 0444)
+            else:
+                os.chmod(path, 0755)
+                os.system("strip -ur " + path + " 2>/dev/null")
+                os.chmod(path, 0555)
 
     def copy_icon_themes(self):
         all_icons = Set()
@@ -347,6 +351,11 @@ class Bundler:
                     (head, tail) = os.path.splitext(f)
                     if head in used_icons or theme.icons == IconTheme.ICONS_ALL:
                         path = os.path.join(root, f)
+
+                        # Note: Skipping svgs for now, they are really
+                        # big and not really used.
+                        if path.endswith(".svg"):
+                            continue
 
                         # Replace the real paths with the prefix macro
                         # so we can use copy_path.
@@ -402,11 +411,11 @@ class Bundler:
         self.copy_binaries(self.project.get_binaries())
         self.resolve_library_dependencies()
 
+        self.copy_icon_themes()
+
         self.create_pango_setup()
         self.create_gtk_immodules_setup()
         self.create_gdk_pixbuf_loaders_setup()
-
-        self.copy_icon_themes()
 
         self.strip_debugging()
 
