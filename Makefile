@@ -15,7 +15,11 @@ distdir = $(PACKAGE)-$(VERSION)
 dist:
 	-rm -rf $(distdir)
 	mkdir $(distdir)
-	cp -p README COPYING NEWS Makefile ige-mac-bundler.in launcher.sh *.py $(distdir)/
+	cp -p README COPYING NEWS Makefile ige-mac-bundler.in $(distdir)/
+	mkdir $(distdir)/ui
+	cp -p ui/* $(distdir)/ui/
+	mkdir $(distdir)/bundler
+	cp -p bundler/* $(distdir)/bundler/
 	mkdir $(distdir)/examples
 	cp -p examples/* $(distdir)/examples/
 	chmod -R a+r $(distdir)
