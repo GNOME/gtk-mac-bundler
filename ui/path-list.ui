@@ -1,0 +1,69 @@
+<?xml version="1.0" standalone="no"?> <!--*- mode: xml -*-->
+<interface>
+  <!--object class="GtkListStore" id="liststore">
+    <columns>
+      <column type="gchararray"/>
+      <column type="gchararray"/>
+      <column type="gchararray"/>
+    </columns>
+    <data>
+      <row>
+        <col id="0">test source</col>
+        <col id="1">test dest</col>
+        <col id="2">File</col>
+      </row>
+      <row>
+        <col id="0">test source</col>
+        <col id="1">test dest</col>
+        <col id="2">File</col>
+      </row>
+    </data>
+  </object-->
+
+  <object class="GtkScrolledWindow" id="scrolledwindow">
+    <property name="hscrollbar_policy">automatic</property>
+    <property name="shadow_type">in</property>
+    <property name="vscrollbar_policy">automatic</property>
+    <child>
+      <object class="GtkTreeView" id="treeview">
+        <!--property name="model">liststore</property-->
+        <property name="headers-visible">true</property>
+        <child>
+          <object class="GtkTreeViewColumn" id="source_column">
+            <property name="title">Source</property>
+            <property name="expand">true</property>
+            <child>
+              <object class="GtkCellRendererText" id="source_renderer"/>
+              <!--attributes>
+                <attribute name="text">0</attribute>
+              </attributes-->
+            </child>
+          </object>
+        </child>
+        <child>
+          <object class="GtkTreeViewColumn" id="dest_column">
+            <property name="title">Destination</property>
+            <property name="expand">true</property>
+            <child>
+              <object class="GtkCellRendererText" id="dest_renderer"/>
+              <!--attributes>
+                <attribute name="text">1</attribute>
+              </attributes-->
+            </child>
+          </object>
+        </child>
+        <child>
+          <object class="GtkTreeViewColumn" id="type_column">
+            <property name="title">Type</property>
+            <child>
+              <object class="GtkCellRendererText" id="type_renderer"/>
+              <!--attributes>
+                <attribute name="text">2</attribute>
+              </attributes-->
+            </child>
+          </object>
+        </child>
+      </object>
+    </child>
+  </object>
+</interface>

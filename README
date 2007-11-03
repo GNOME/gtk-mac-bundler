@@ -1,0 +1,289 @@
+Ige Mac Bundler
+===============
+
+The script ige-mac-bundler is a helper script that creates application
+bundles form GTK+ executables for Mac OS X. The resulting bundle will
+contain a complete self-hosting GTK+ installation, ready to run on any
+computer with Mac OS X 10.4 or later installed.
+
+GTK+ and its companion libraries are automatically put into the
+bundle, but the application packager must tell the script what other
+files and directories to copy.
+
+
+Setting up
+----------
+
+Run "make install"; this installs the script into ~/bin. Make sure you
+have that directory in your path, or use the full path when starting
+the script.
+
+
+Prerequisites
+-------------
+
+You need to have a GTK+ installation as done for example by using
+jhbuild as described on the GTK+ OS X project site:
+
+ http://developer.imendio.com/projects/gtk-macosx/build-instructions
+
+[ Note that at the time of writing you need to patch Pango to support
+  path-relative modules, see:
+  http://bugzilla.gnome.org/show_bug.cgi?id=454017 ]
+
+The ige-mac-bundler command needs to be ran inside an environment
+setup for running the GTK+, for example inside a jhbuild shell.
+
+For the more in-depth parts described here, you are expected to be
+familiar with the layout of OS X bundles.
+
+
+Quick introduction
+------------------
+
+You need to create a configuration file describing the application
+bundle. The very simple example, example.bundle:
+
+<?xml version="1.0"?> <!--*- mode: xml -*-->
+<app-bundle>
+  <meta>
+    <prefix>/opt/gtk</prefix>
+  </meta>
+
+  <plist>${project}/Info.plist</plist>
+  <launcher-script>yes</launcher-script>
+
+  <!-- The executable for the application -->
+  <main-binary>${prefix}/bin/my-app</main-binary>
+
+  <!-- Modules for GTK+ and Pango (font rendering, image loaders, etc) -->
+  <binary>${prefix}/lib/gtk-2.0</binary>
+  <binary>${prefix}/lib/pango</binary>
+
+  <!-- Any additional data, like images, or Glade files -->
+  <data>
+    ${prefix}/share/my-app
+  </data>
+
+</app-bundle>
+
+Put this file into a directory, together with the standard Info.plist
+file that all Mac OS X bundles need. Then run the script with the
+bundle configuration path as argument. This will create a bundle in
+the current directory.
+
+
+The file format in more depth
+=============================
+
+The simple example above works for small and simple applications, but
+often you will need to specify more data to copy in, or to have more
+detailed control over what is copied. 
+
+Here we go through in more depth how this can be acheived. Every file
+and directory to copy is specified with a source path, and an optional
+destination path. An example that copies an entire directory
+recursively, from the installation prefix:
+
+  <data>
+    ${prefix}/share/my-data
+  </data>
+
+Since no destination path is specified, the directory will be copied
+into the standard location. Note that the special value ${prefix} is
+used in the source path, which makes the default destination path be
+relative to the "bundle prefix", which is the Contents/Resources
+directory inside the bundle. Applications that use the freedesktop
+"data dir" specification to find their data will automatically find
+its data this way (applications can also use the Carbon or Cocoa
+bundle APIs to find data).
+
+Another useful "special value" that can be used in source paths is
+${project}, which refers to the directory where the XML file is
+located. An example:
+
+  <data dest="${bundle}/Contents/Resources/etc/gtk-2.0/gtkrc">
+    ${project}/gtkrc
+  </data>
+
+Here you notice that a destination path is supplied. This must be done
+since there is no way to figure out where to put the file that doesn't
+come from a ${prefix} location. You can also see another variable
+used, this time in the destination path, ${bundle}. All destination
+paths must be either unset or start with ${bundle}.
+
+The remaining variables, are:
+
+ ${env:name} - evaluates to the environment variable "name"
+
+ ${pkg:module:name} - evaluates to the value of the pkg-config
+                      variable "name" in the module "module"
+
+An example use case of the latter is for finding files that are
+located in a versioned directory without having to maintain the
+directory name manually. For example:
+
+  <binary>
+    ${prefix}/lib/gtk-2.0/${pkg:gtk+-2.0:gtk_binary_version}/loaders
+  </binary>
+
+
+Metadata
+--------
+
+Now that we know how paths can be specified, let's back up and see the
+beginning of a more extensive exampe. The first thing to setup is some
+metadata:
+
+<app-bundle>
+
+  <meta>
+    <prefix name="default">${env:PREFIX}</prefix>
+    <destination overwrite="yes">${env:HOME}/Desktop</destination>
+  </meta>
+
+  [...]
+
+</app-bundle>
+
+We use the ${env} variable to get the installation prefix (which comes
+from the jhbuild build script). We also use it to set the destination
+of the app bundle on the current user's desktop.
+
+You can set additional prefixes and refer to them in paths:
+
+  <meta>
+    <prefix name="default">${env:PREFIX}</prefix>
+    <prefix name="gst">/opt/gstreamer</prefix>
+    <prefix name="stuff">/opt/stuff</prefix>
+  </meta>
+
+The additional prefixes are referred to by using ${prefix:name}, where
+"name" is one of the names defined above.
+
+
+Installed data
+--------------
+
+Next you need to list the data to install. Some is required for the
+app bundle to be complete:
+
+  <plist>${project}/../data/Info.plist</plist>
+
+  <launcher-script>${project}/launcher.sh</launcher-script>
+
+  <main-binary>${prefix}/bin/giggle</main-binary>
+
+The file Info.plist is the standard Mac OS file for bundles. See XXX
+for documentation on those.
+
+The launcher script is used to setup the necessary environment for the
+application to work. If your application does this itself, you can
+leave it out. Many applications will work out of the box with the
+launcher script though. If no script is specified in the tag, a
+default one is used, that sets up the needed environent for most GTK+
+applications.
+
+Unsurprisingly, the main-binary tag specifies the executable to launch
+when starting the application.
+
+
+General application data
+------------------------
+
+Next we handle any general data to copy into the bundle. A
+straight-forward example:
+
+  <data dest="${bundle}/Contents/Resources">
+    ${project}/Giggle.icns
+  </data>
+
+  <data dest="${bundle}/Contents/Resources/etc/gtk-2.0/gtkrc">
+    ${project}/gtkrc
+  </data>
+
+
+Binaries
+--------
+
+When it comes to binaries (executables and loadable modules), the tag
+"binary" should be used. The difference between "binary" and "data" is
+that all copied binaries are scanned for library dependencies, which
+are automatically copied into the bundle. This way, you only need to
+list your executables and plugins. Again, an example:
+
+  <binary>
+    ${prefix}/lib/pango/${pkg:pango:pango_module_version}/modules/pango-basic-atsui.so
+  </binary>
+
+This will copy the ATSUI font module for Pango. This in turn will pull
+in any needed libraries that it links to.
+
+Note that you can use wildcards for all data and binary tags, for
+example:
+
+  <binary>
+    ${prefix}/lib/gtk/*/*/*.so
+  </binary>
+
+
+Icon themes
+-----------
+
+GTK+ icon themes have their own tag, "icon-theme". The name of the
+theme (which currently must reside in the default prefix) specifies
+which theme to copy, and the "icons" property specifies which icons to
+copy. The valid values are:
+
+  auto - tries to copy all icons names that match strings in all
+         copied binaries; this will not always work perfectly but is
+         good for getting started, and for simple applications
+ 
+  all - copies all icons
+
+  none - copies no icons, this can be used in combination with
+         specifying icons manually with a regular data tag; the icon
+         theme itself must be listed in order to get the index theme
+         copied and an icon cache generated
+
+Note that the base theme "hicolor" is always copied, since it is
+required by GTK+. An example:
+
+  <icon-theme icons="auto">
+    Tango
+  </icon-theme>
+
+
+Unimplemented so far
+--------------------
+
+- Translations - you can copy them manually using the data tag
+
+- Built-in support for PyGTK or Mono applications
+
+- Using install_name_tool instead of relying on DYLD_*
+
+
+Debugging the bundle
+====================
+
+In order to debug the created app bundle (most notably the launcher
+script), you can set the environment variable IGE_MAC_APP_DEBUG before
+starting the applications directly from a terminal. e.g.:
+
+  IGE_MAC_APP_DEBUG=yes MyApp.app/Contents/MacOS/MyApp
+
+This will print out the steps performed by the launcher script before
+the application executable is started.
+
+Note also that the Console.app program that comes with OS X is very
+useful when debugging app bundle problems. You can use it to see any
+output from the application the console log window.
+
+
+License
+=======
+
+The script is licensed under the GNU General Public License version
+2. The resulting bundle created by the script is not covered by that
+and can be licensed any way you want.
