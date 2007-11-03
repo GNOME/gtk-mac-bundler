@@ -167,8 +167,7 @@ class Bundler:
             # Clean up duplicates
             self.binary_paths = list(Set(self.binary_paths))
 
-            # Clean out any libtool (*.la) files and static
-            # libraries
+            # Clean out any libtool (*.la) files and static libraries
             if os.path.isdir(dest):
                 for root, dirs, files in os.walk(dest):
                     for name in filter(lambda l: l.endswith(".la") or l.endswith(".a"), files):
@@ -190,6 +189,14 @@ class Bundler:
             if m:
                 relative_dest = self.project.evaluate_path(Path.source[m.end():])
                 dest = self.project.get_bundle_path("Contents/Resources", relative_dest)
+
+                # Remove the last component if it has wildcards.
+                p = re.compile("[\*\?]")
+                (parent, tail) = os.path.split(dest)
+                if p.search(parent):
+                    raise Exception("Can't have wildcards except in the last path component")
+                if p.search(tail):
+                    dest = os.path.join(parent, "")
             else:
                 raise "Invalid project file, missing 'dest' property"
 
@@ -291,6 +298,15 @@ class Bundler:
             self.copy_binaries(new_libraries)
             paths = self.list_copied_binaries()
 
+    def strip_debugging(self):
+        path = self.project.get_bundle_path("Contents/Resources/lib")
+        os.popen3("strip -x " + path + "/*.dylib")
+
+        path = self.project.evaluate_path(self.project.get_main_binary().dest)
+        os.popen3("strip -ur " + path)
+
+        # FIXME: We could also strip the modules (pango + gtk)
+
     def copy_icon_themes(self):
         all_icons = Set()
 
@@ -391,6 +407,8 @@ class Bundler:
         self.create_gdk_pixbuf_loaders_setup()
 
         self.copy_icon_themes()
+
+        self.strip_debugging()
 
         if meta.overwrite:
             self.recursive_rm(final_path)

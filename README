@@ -219,11 +219,11 @@ list your executables and plugins. Again, an example:
 This will copy the ATSUI font module for Pango. This in turn will pull
 in any needed libraries that it links to.
 
-Note that you can use wildcards for all data and binary tags, for
-example:
+Note that you can use wildcards for all data and binary tags, but only
+in the last path component, for example:
 
   <binary>
-    ${prefix}/lib/gtk/*/*/*.so
+    ${prefix}/lib/gtk/2.10.0/loaders/*.so
   </binary>
 
 
