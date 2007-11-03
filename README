@@ -284,6 +284,7 @@ output from the application the console log window.
 License
 =======
 
-The script is licensed under the GNU General Public License version
-2. The resulting bundle created by the script is not covered by that
-and can be licensed any way you want.
+The script is Copyright (C) 2007 Imendio AB, and licensed under the
+GNU General Public License version 2. The resulting bundle created by
+the script is not covered by that and can be licensed any way you
+want.
