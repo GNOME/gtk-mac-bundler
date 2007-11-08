@@ -14,9 +14,9 @@ class Path:
         if dest and len(dest) == 0:
             dest = None
 
-        if source:
+        if source and os.path.isabs(source):
             source = os.path.normpath(source)
-        if dest:
+        if dest and os.path.isabs(dest):
             dest = os.path.normpath(dest)
             
         self.source = source
@@ -216,7 +216,7 @@ class Project:
         path = utils.evaluate_environment_variables(path)
         path = utils.evaluate_pkgconfig_variables(path)
 
-        return path
+        return os.path.normpath(path)
 
     def get_name(self):
         return self.name

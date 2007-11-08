@@ -137,6 +137,8 @@ class Bundler:
         modulespath = self.project.get_bundle_path("Contents/Resources/lib/gtk-2.0/" +
                                                    "${pkg:gtk+-2.0:gtk_binary_version}/"+
                                                    "loaders")
+        modulespath = utils.evaluate_pkgconfig_variables (modulespath)
+
         cmd = "GDK_PIXBUF_MODULEDIR=" + modulespath + " gdk-pixbuf-query-loaders"
         f = os.popen(cmd)
 
@@ -263,23 +265,39 @@ class Bundler:
 
             prefixes = self.project.get_meta().prefixes
 
+            def relative_path_map(line):
+                if not os.path.isabs(line):
+                    # FIXME: Try all prefixes here.
+                    return os.path.join(self.project.get_prefix(), "lib", line)
+                return line
+
             def prefix_filter(line):
                 if not "(compatibility" in line:
                     return False
-                for prefix in prefixes.values():
-                    if prefix in line:
-                        return True
 
-                # Warn about any unresolved dependencies that are not
-                # part of the system.
-                if not line.startswith("/usr/lib") and not line.startswith("/System/Library"):
-                    print "Warning, library not available in any prefix:", line.strip().split()[0]
+                if line.startswith("/usr/X11"):
+                    print "Warning, found X11 library dependency, you most likely don't want that:", line.strip().split()[0]
+                if line.startswith("/usr/X11"):
+                    print "Warning, found X11 library dependency, you most likely don't want that:", line.strip().split()[0]
 
-                return False
+                if os.path.isabs(line):
+                    for prefix in prefixes.values():
+                        if prefix in line:
+                            return True
+                    
+                    if not line.startswith("/usr/lib") and not line.startswith("/System/Library"):
+                        print "Warning, library not available in any prefix:", line.strip().split()[0]
+
+                    return False
+
+                return True
 
             lines = filter(prefix_filter, [line.strip() for line in f])
 
-            p = re.compile("(.*.dylib)\s\(compatibility.*$")
+            p = re.compile("(.*\.dylib\.?.*)\s\(compatibility.*$")
+            
+            lines = map(relative_path_map, lines)
+
             lines = map(lambda line: p.match(line).group(1), lines)
 
             new_libraries = []
@@ -417,7 +435,7 @@ class Bundler:
         self.create_gtk_immodules_setup()
         self.create_gdk_pixbuf_loaders_setup()
 
-        self.strip_debugging()
+        #self.strip_debugging()
 
         if meta.overwrite:
             self.recursive_rm(final_path)
