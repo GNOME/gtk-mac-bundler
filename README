@@ -51,7 +51,10 @@ bundle. The very simple example, example.bundle:
   </meta>
 
   <plist>${project}/Info.plist</plist>
-  <launcher-script>yes</launcher-script>
+
+  <!-- Optionally specify a launcher script to use. Builtin script is
+       used if not specified.  -->
+  <!--launcher-script>${project}/launcher.sh</launcher-script-->
 
   <!-- The executable for the application -->
   <main-binary>${prefix}/bin/my-app</main-binary>
