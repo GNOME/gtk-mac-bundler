@@ -19,7 +19,8 @@ dist:
 	mkdir $(distdir)/ui
 	cp -p ui/* $(distdir)/ui/
 	mkdir $(distdir)/bundler
-	cp -p bundler/* $(distdir)/bundler/
+	cp -p bundler/*.py $(distdir)/bundler/
+	cp -p bundler/*.sh $(distdir)/bundler/
 	mkdir $(distdir)/examples
 	cp -p examples/* $(distdir)/examples/
 	chmod -R a+r $(distdir)
