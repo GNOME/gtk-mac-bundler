@@ -192,16 +192,16 @@ class Bundler:
             if m:
                 relative_dest = self.project.evaluate_path(Path.source[m.end():])
                 dest = self.project.get_bundle_path("Contents/Resources", relative_dest)
-
-                # Remove the last component if it has wildcards.
-                p = re.compile("[\*\?]")
-                (parent, tail) = os.path.split(dest)
-                if p.search(parent):
-                    raise Exception("Can't have wildcards except in the last path component")
-                if p.search(tail):
-                    dest = os.path.join(parent, "")
             else:
-                raise "Invalid project file, missing 'dest' property"
+                raise "Invalid bundle file, missing 'dest' property"
+
+        # Create the dest directory if the source has wildcards, so we can copy into it.
+        p = re.compile("[\*\?]")
+        (parent, tail) = os.path.split(source)
+        if p.search(parent):
+            raise Exception("Can't have wildcards except in the last path component")
+        if p.search(tail):
+            utils.makedirs(dest)
 
         (parent, tail) = os.path.split(dest)
         utils.makedirs(parent)
