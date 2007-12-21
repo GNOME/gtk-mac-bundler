@@ -277,8 +277,6 @@ class Bundler:
 
                 if line.startswith("/usr/X11"):
                     print "Warning, found X11 library dependency, you most likely don't want that:", line.strip().split()[0]
-                if line.startswith("/usr/X11"):
-                    print "Warning, found X11 library dependency, you most likely don't want that:", line.strip().split()[0]
 
                 if os.path.isabs(line):
                     for prefix in prefixes.values():
@@ -316,6 +314,30 @@ class Bundler:
             
             self.copy_binaries(new_libraries)
             paths = self.list_copied_binaries()
+
+    def run_install_name_tool(self):
+        print "Running install name tool"
+
+        paths = self.list_copied_binaries()
+        prefixes = self.project.get_meta().prefixes
+
+        # First change all references in libraries.
+        for prefix in prefixes:
+            prefix_path = self.project.get_prefix(prefix)
+            print "Going through prefix: " + prefix_path
+            for path in paths:
+                cmd = os.path.join(os.path.dirname(__file__), "run-install-name-tool-change.sh") + " " + path + " " + prefix_path
+                f = os.popen(cmd)
+                for line in f:
+                    print line
+
+        # Then change the id of all libraries. Skipping this part for now
+        #for path in paths:
+        #    cmd = os.path.join(os.path.dirname(__file__), "run-install-name-tool-id.sh") + " " + path
+        #    print cmd
+        #    f = os.popen(cmd)
+        #    for line in f:
+        #        print line
 
     def strip_debugging(self):
         paths = self.list_copied_binaries()
@@ -394,7 +416,8 @@ class Bundler:
 
     def run(self):
         # Remove the temp location forcefully.
-        self.recursive_rm(self.bundle_path)
+        path = self.project.evaluate_path(self.bundle_path)
+        self.recursive_rm(path)
 
         meta = self.project.get_meta()
 
@@ -434,6 +457,9 @@ class Bundler:
         self.create_pango_setup()
         self.create_gtk_immodules_setup()
         self.create_gdk_pixbuf_loaders_setup()
+
+        if meta.run_install_name_tool:
+            self.run_install_name_tool()
 
         #self.strip_debugging()
 
