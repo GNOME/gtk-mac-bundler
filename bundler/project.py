@@ -109,6 +109,12 @@ class Meta:
         if child:
             pass # FIXME: implement
         
+        child = utils.node_get_element_by_tag_name(node, "run-install-name-tool")
+        if child:
+            self.run_install_name_tool = True
+        else:
+            self.run_install_name_tool = False
+
         child = utils.node_get_element_by_tag_name(node, "destination")
         self.overwrite = utils.node_get_property_boolean(child, "overwrite", False)
         self.dest = utils.node_get_string(child, "${project}")
