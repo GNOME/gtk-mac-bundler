@@ -291,12 +291,10 @@ class Bundler:
                 return True
 
             lines = filter(prefix_filter, [line.strip() for line in f])
-
-            p = re.compile("(.*\.dylib\.?.*)\s\(compatibility.*$")
-            
             lines = map(relative_path_map, lines)
 
-            lines = map(lambda line: p.match(line).group(1), lines)
+            p = re.compile("(.*\.dylib\.?.*)\s\(compatibility.*$")
+            lines = utils.filterlines(p, lines)
 
             new_libraries = []
             for library in Set(lines):

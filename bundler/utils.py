@@ -65,3 +65,9 @@ def node_get_property_boolean(node, name, default=False):
         pass
 
     return default
+
+def filterlines(p, lines):
+    for line in lines:
+        match = p.match(line)
+        if match:
+            yield match.group(1)
