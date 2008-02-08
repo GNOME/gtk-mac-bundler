@@ -30,7 +30,8 @@ class Bundler:
     def recursive_rm(self, dirname):
         # Extra safety ;)
         if dirname in [ "/", os.getenv("HOME"), os.path.join(os.getenv("HOME"), "Desktop") ]:
-            raise "Eek, trying to remove a bit much, eh? (%s)" % (dirname)
+            print "Eek, trying to remove a bit much, eh? (%s)" % (dirname)
+            sys.exit(1)
 
         if not os.path.exists(dirname):
             return
@@ -193,18 +194,31 @@ class Bundler:
                 relative_dest = self.project.evaluate_path(Path.source[m.end():])
                 dest = self.project.get_bundle_path("Contents/Resources", relative_dest)
             else:
-                raise "Invalid bundle file, missing 'dest' property"
+                print "Invalid bundle file, missing or invalid 'dest' property: " + Path.dest
+                sys.exit(1)
 
-        # Create the dest directory if the source has wildcards, so we can copy into it.
+        (dest_parent, dest_tail) = os.path.split(dest)
+        utils.makedirs(dest_parent)
+
+        # Check that the source only has wildcards in the last component.
         p = re.compile("[\*\?]")
-        (parent, tail) = os.path.split(source)
-        if p.search(parent):
-            raise Exception("Can't have wildcards except in the last path component")
-        if p.search(tail):
-            utils.makedirs(dest)
+        (source_parent, source_tail) = os.path.split(source)
+        if p.search(source_parent):
+            print "Can't have wildcards except in the last path component: " + source
+            sys.exit(1)
 
-        (parent, tail) = os.path.split(dest)
-        utils.makedirs(parent)
+        if p.search(source_tail):
+            source_check = source_parent
+        else:
+            source_check = source
+        if not os.path.exists(source_check):
+            print "Cannot find source to copy: " + source
+            sys.exit(1)
+
+        # If the destination has a wildcard as last component (copied
+        # from the source in dest-less paths), ignore the tail.
+        if p.search(dest_tail):
+            dest = dest_parent
 
         for globbed_source in glob.glob(source):
             try:
@@ -226,7 +240,8 @@ class Bundler:
                 elif e.errno == errno.EEXIST:
                     print "Warning, path already exits: " + dest
                 else:
-                    raise
+                    print "Error when copying file: " + globbed_source
+                    sys.exit(1)
 
         return dest
 
@@ -308,7 +323,8 @@ class Bundler:
             n_paths = len(paths)
             n_iterations += 1
             if n_iterations > 10:
-                raise Exception("Too many tries to resolve library dependencies")
+                print "Too many tries to resolve library dependencies"
+                sys.exit(1)
             
             self.copy_binaries(new_libraries)
             paths = self.list_copied_binaries()
@@ -405,13 +421,6 @@ class Bundler:
             cmd = "gtk-update-icon-cache -f " + path + " 2>/dev/null"
             os.popen(cmd)
 
-    # FIXME: Do this in project.py instead.
-    def check(self):
-        # Check that the executable exists
-        # - and is executable
-        # - and not a libtool script
-        return True
-
     def run(self):
         # Remove the temp location forcefully.
         path = self.project.evaluate_path(self.bundle_path)
@@ -423,8 +432,8 @@ class Bundler:
         final_path = self.project.evaluate_path(final_path)
 
         if not meta.overwrite and os.path.exists(final_path):
-            print "Bundle already exists: " % (final_path)
-            return
+            print "Bundle already exists: " + final_path
+            sys.exit(1)
 
         self.create_skeleton()
         self.create_pkglist()
@@ -443,7 +452,13 @@ class Bundler:
             self.copy_path(launcher_script)
 
         # Main binary
-        dest = self.copy_path(self.project.get_main_binary())
+        path = self.project.get_main_binary()
+        source = self.project.evaluate_path(path.source)
+        if not os.path.exists(source):
+            print "Cannot find main binary: " + source
+            sys.exit(1)
+
+        dest = self.copy_path(path)
         self.binary_paths.append(dest)
 
         # Additional binaries (executables, libraries, modules)

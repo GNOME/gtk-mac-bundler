@@ -1,3 +1,5 @@
+import errno
+import sys
 import re
 import os
 import xml.dom.minidom
@@ -187,9 +189,14 @@ class Project:
         self.project_dir, tail = os.path.split(project_path)
 
         plist_path = self.get_plist_path()
-        plist = Plist.fromFile(plist_path)
-        if not plist:
-            raise Exception("Plist file not found: " + plist_path)
+        try:
+            plist = Plist.fromFile(plist_path)
+        except EnvironmentError, e:
+            if e.errno == errno.ENOENT:
+                print "Info.plist file not found: " + plist_path
+                sys.exit(1)
+            else:
+                raise
         self.name = plist.CFBundleExecutable
 
     # Replace ${env:?}, ${prefix}, ${prefix:?}, ${project},
