@@ -271,10 +271,10 @@ Debugging the bundle
 ====================
 
 In order to debug the created app bundle (most notably the launcher
-script), you can set the environment variable IGE_MAC_APP_DEBUG before
+script), you can set the environment variable IGE_DEBUG_LAUNCHER before
 starting the applications directly from a terminal. e.g.:
 
-  IGE_MAC_APP_DEBUG=yes MyApp.app/Contents/MacOS/MyApp
+  IGE_DEBUG_LAUNCHER=yes MyApp.app/Contents/MacOS/MyApp
 
 This will print out the steps performed by the launcher script before
 the application executable is started.
@@ -282,6 +282,10 @@ the application executable is started.
 Note also that the Console.app program that comes with OS X is very
 useful when debugging app bundle problems. You can use it to see any
 output from the application the console log window.
+
+To run the application under gdb, do:
+
+  IGE_DEBUG_GDB=yes MyApp.app/Contents/MacOS/MyApp
 
 
 License

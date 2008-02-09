@@ -1,7 +1,10 @@
 #!/bin/sh
 
-if test "x$IGE_MAC_APP_DEBUG" != x; then
+if test "x$IGE_DEBUG_LAUNCHER" != x; then
     set -x
+fi
+
+if test "x$IGE_DEBUG_GDB" != x; then
     EXEC="gdb --args"
 else
     EXEC=exec
