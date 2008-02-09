@@ -246,7 +246,7 @@ class Bundler:
         return dest
 
     # Lists all the binaries copied in so far. Used in the library
-    # dependency resolution.
+    # dependency resolution and icon theme lookup.
     def list_copied_binaries(self):
         paths = []
         for path in self.binary_paths:
@@ -385,11 +385,14 @@ class Bundler:
 
         strings = Set()
 
+        # Get strings from binaries.
         for f in self.list_copied_binaries():
             p = os.popen("strings " + f)
             for string in p:
                 string = string.strip()
                 strings.add(string)
+
+        # FIXME: Also get strings from glade files.
 
         used_icons = all_icons.intersection(strings)
         prefix = self.project.get_prefix()
