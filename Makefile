@@ -1,5 +1,5 @@
 PACKAGE = ige-mac-bundler
-VERSION = 0.3
+VERSION = 0.4
 
 bindir=$(HOME)/bin
 
