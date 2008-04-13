@@ -468,6 +468,11 @@ class Bundler:
         self.copy_binaries(self.project.get_binaries())
         self.resolve_library_dependencies()
 
+        # Frameworks
+        frameworks = self.project.get_frameworks()
+        for path in frameworks:
+            self.copy_path(path)
+
         self.copy_icon_themes()
 
         self.create_pango_setup()
