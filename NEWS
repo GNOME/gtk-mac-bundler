@@ -1,3 +1,10 @@
+NEW IN 0.5
+==========
+
+- Correct the GTK_DATA_PREFIX variable
+- Add beginnings of framework support
+
+
 NEW IN 0.4
 ==========
 
