@@ -74,7 +74,6 @@ class Path:
         return True
     validate = classmethod(validate)
 
-
 # Used for anything that has a name and value.
 class Variable:
     def __init__(self, node):
@@ -121,9 +120,21 @@ class Meta:
         self.overwrite = utils.node_get_property_boolean(child, "overwrite", False)
         self.dest = utils.node_get_string(child, "${project}")
 
-class Framework:
-    def __init__(self, node):
-        pass
+class Framework(Path):
+    def __init__(self, source):
+        Path.__init__(self, source, self.get_dest_path_from_source(source))
+
+    def from_node(cls, node):
+        framework = Path.from_node(node, validate=False)
+        framework.dest = Framework.get_dest_path_from_source(framework.source)
+
+        return framework
+    from_node = classmethod(from_node)
+
+    def get_dest_path_from_source(cls, source):
+        (head, tail) = os.path.split(source)
+        return "${bundle}/Contents/Frameworks/" + tail
+    get_dest_path_from_source = classmethod(get_dest_path_from_source)
 
 class Binary(Path):
     def __init__(self, source, dest):
@@ -293,7 +304,7 @@ class Project:
         frameworks = []
         nodes = utils.node_get_elements_by_tag_name(self.root, "framework")
         for node in nodes:
-            frameworks.append(Framework(node))
+            frameworks.append(Framework.from_node(node))
         return frameworks
 
     def get_main_binary(self):
