@@ -27,10 +27,6 @@ jhbuild as described on the GTK+ OS X project site:
 
  http://developer.imendio.com/projects/gtk-macosx/build-instructions
 
-[ Note that at the time of writing you need to patch Pango to support
-  path-relative modules, see:
-  http://bugzilla.gnome.org/show_bug.cgi?id=454017 ]
-
 The ige-mac-bundler command needs to be ran inside an environment
 setup for running the GTK+, for example inside a jhbuild shell.
 
@@ -59,9 +55,8 @@ bundle. The very simple example, example.bundle:
   <!-- The executable for the application -->
   <main-binary>${prefix}/bin/my-app</main-binary>
 
-  <!-- Modules for GTK+ and Pango (font rendering, image loaders, etc) -->
+  <!-- Modules for GTK+ (image loaders, etc) -->
   <binary>${prefix}/lib/gtk-2.0</binary>
-  <binary>${prefix}/lib/pango</binary>
 
   <!-- Any additional data, like images, or Glade files -->
   <data>
@@ -266,6 +261,8 @@ Unimplemented so far
 
 - Using install_name_tool instead of relying on DYLD_*
 
+- Support for copying in frameworks.
+
 
 Debugging the bundle
 ====================
@@ -291,7 +288,7 @@ To run the application under gdb, do:
 License
 =======
 
-The script is Copyright (C) 2007 Imendio AB, and licensed under the
-GNU General Public License version 2. The resulting bundle created by
-the script is not covered by that and can be licensed any way you
-want.
+The script is Copyright (C) 2007, 2008 Imendio AB, and licensed under
+the GNU General Public License version 2. Note that the resulting bundle created
+by the script is not covered by that, each invidiual library has its
+own license.
