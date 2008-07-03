@@ -3,6 +3,9 @@ NEW IN 0.5
 
 - Correct the GTK_DATA_PREFIX variable
 - Add beginnings of framework support
+- Clarifications in README and example bundle file
+- Remove support for non-included Pango font module
+- Fix locale in the launcher script
 
 
 NEW IN 0.4
