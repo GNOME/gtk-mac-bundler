@@ -10,6 +10,11 @@ GTK+ and its companion libraries are automatically put into the
 bundle, but the application packager must tell the script what other
 files and directories to copy.
 
+NOTE: This tool is written to work with a jhbuild built GTK+ , not
+Macports. If you build with Macports, make sure that the Pango atsui
+module is builtin to the Pango library, by using the configure flag
+--with-included-modules=basic-atsui.
+
 
 Setting up
 ----------
