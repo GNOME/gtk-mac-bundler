@@ -30,9 +30,9 @@ Prerequisites
 You need to have a GTK+ installation as done for example by using
 jhbuild as described on the GTK+ OS X project site:
 
- http://developer.imendio.com/projects/gtk-macosx/build-instructions
+	http://live.gnome.org/GTK%2B/OSX/BuildInstructions
 
-The ige-mac-bundler command needs to be ran inside an environment
+The ige-mac-bundler command needs to be run inside an environment
 setup for running the GTK+, for example inside a jhbuild shell.
 
 For the more in-depth parts described here, you are expected to be
