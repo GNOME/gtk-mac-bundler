@@ -3,7 +3,6 @@ import os, errno, glob
 import dircache, shutil
 import re
 from plistlib import Plist
-from sets import Set
 from distutils import dir_util
 
 from project import *
@@ -169,7 +168,7 @@ class Bundler:
             self.binary_paths.append(dest)
 
             # Clean up duplicates
-            self.binary_paths = list(Set(self.binary_paths))
+            self.binary_paths = list(set(self.binary_paths))
 
             # Clean out any libtool (*.la) files and static libraries
             if os.path.isdir(dest):
@@ -312,7 +311,7 @@ class Bundler:
             lines = utils.filterlines(p, lines)
 
             new_libraries = []
-            for library in Set(lines):
+            for library in set(lines):
                 # Replace the real path with the right prefix so we can
                 # create a Path object.
                 for (key, value) in prefixes.items():
@@ -366,7 +365,7 @@ class Bundler:
                 os.chmod(path, 0555)
 
     def copy_icon_themes(self):
-        all_icons = Set()
+        all_icons = set()
 
         themes = self.project.get_icon_themes()
 
@@ -383,7 +382,7 @@ class Bundler:
                     if tail in [".png", ".svg"]:
                         all_icons.add(head)
 
-        strings = Set()
+        strings = set()
 
         # Get strings from binaries.
         for f in self.list_copied_binaries():
