@@ -1,3 +1,9 @@
+NEW IN 0.5.1
+============
+- New URL for gtk-osx
+- Example has instructions to copy themes and engines into the bundle
+- Replaced deprecated Python sets module with native set calls 
+
 NEW IN 0.5
 ==========
 
