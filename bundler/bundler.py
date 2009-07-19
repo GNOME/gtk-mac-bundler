@@ -180,7 +180,6 @@ class Bundler:
     # in the paths, and returns the real dest.
     def copy_path(self, Path):
         source = self.project.evaluate_path(Path.source)
-
         if Path.dest:
             dest = self.project.evaluate_path(Path.dest)
         else:
@@ -241,7 +240,6 @@ class Bundler:
                 else:
                     print "Error when copying file: " + globbed_source
                     sys.exit(1)
-
         return dest
 
     # Lists all the binaries copied in so far. Used in the library
@@ -444,10 +442,6 @@ class Bundler:
         # Note: could move this to xml file...
         self.copy_path(Path("${prefix}/lib/charset.alias"))
 
-        # Data
-        for path in self.project.get_data():
-            self.copy_path(path)
-
         # Launcher script, if necessary.
         launcher_script = self.project.get_launcher_script()
         if launcher_script:
@@ -466,6 +460,10 @@ class Bundler:
         # Additional binaries (executables, libraries, modules)
         self.copy_binaries(self.project.get_binaries())
         self.resolve_library_dependencies()
+
+        # Data
+        for path in self.project.get_data():
+            self.copy_path(path)
 
         # Frameworks
         frameworks = self.project.get_frameworks()
