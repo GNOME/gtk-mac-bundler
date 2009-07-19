@@ -229,6 +229,17 @@ in the last path component, for example:
     ${prefix}/lib/gtk/2.10.0/loaders/*.so
   </binary>
 
+An intereseting twist is that some libraries that are built as dylibs
+are used as loadable modules. Dlopen doesn't have a problem with this,
+it will cheerfully open either. The problem comes because unlike
+Linux, Mach uses different file extensions and formats, so libtool
+will set up dlopen to search for libfoo.so after it built
+libfoo.dylib. Libtool also makes libfoo.la which will tell dlopen
+where to look, but ige-mac-bundler deletes those files from the
+application bundle. If you're bundling an app that needs libfoo.la,
+just put it in a data element and ige-mac-integration (version 0.5.2
+and later) will copy it in *after* doing the *.l?a cleanup: <data>
+${prefix}/lib/libfoo*.la </data>
 
 Icon themes
 -----------
