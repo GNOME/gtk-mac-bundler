@@ -275,10 +275,6 @@ Unimplemented so far
 
 - Built-in support for PyGTK or Mono applications
 
-- Using install_name_tool instead of relying on DYLD_*
-
-- Support for copying in frameworks.
-
 
 Debugging the bundle
 ====================
