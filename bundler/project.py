@@ -210,8 +210,10 @@ class Project:
                 raise
         self.name = plist.CFBundleExecutable
 
-    # Replace ${env:?}, ${prefix}, ${prefix:?}, ${project},
-    # ${pkg:?:?}, ${bundle}, and ${name} variables.
+    """
+     Replace ${env:?}, ${prefix}, ${prefix:?}, ${project},
+     ${pkg:?:?}, ${bundle}, and ${name} variables.
+    """
     def evaluate_path(self, path, include_bundle=True):
         p = re.compile("^\${prefix}")
         path = p.sub(self.get_prefix(), path)
