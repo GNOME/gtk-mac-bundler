@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<app-bundle>
+  <metafoo>
+    <prefix>/usr/local/gtk</prefix>
+    <run-install-name-tool/>
+    <image>foo-version.dmg</image>
+  </metafoo>
+  <no-plist>${project}/test.plist</no-plist>
+  <no-binary>${prefix}testbin</no-binary>
+  <binary>
+    ${prefix}/lib/gtk-2.0/${pkg:gtk+-2.0:gtk_binary_version}/loaders/*.so
+  </binary>
+  <binary>
+    ${prefix}/lib/libfoo*
+  </binary>
+  <data>
+    ${prefix}/share/themes
+  </data>
+  <data>
+    ${prefix}/share/foo/
+  </data>
+  <data dest="${bundle}/Contents/Resources/etc/gtk-2.0/gtkrc">
+    ${project}/gtkrc
+  </data>
+  <icon-theme icons="manual">
+    Tango
+  </icon-theme>
+
+</app-bundle>

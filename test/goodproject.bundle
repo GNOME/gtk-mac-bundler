@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<app-bundle>
+  <meta>
+    <prefix>${env:JHBUILD_PREFIX}</prefix>
+    <prefix name="alt">/usr/local/gtk</prefix>
+    <run-install-name-tool/>
+    <image>foo-version.dmg</image>
+  </meta>
+  <plist>${project}/test.plist</plist>
+  <environment>
+    <runtime-variable>
+      PATH=/usr/bin:/bin
+    </runtime-variable>
+    <runtime-variable>
+      PKG_CONFIG_PATH=${env:PREFIX}/lib/pkgconfig
+    </runtime-variable>
+    <script>
+      ${prefix}/bin/foo.sh
+    </script>
+    <script>
+      ${project}/bar.sh
+    </script>
+  </environment>
+  <main-binary>${prefix}/bin/foo-source</main-binary>
+  <binary>
+    ${prefix}/lib/gtk-2.0/${pkg:gtk+-2.0:gtk_binary_version}/loaders/*.so
+  </binary>
+  <binary>
+    ${prefix}/lib/libfoo*
+  </binary>
+  <framework>
+    /System/Library/Carbon.framework
+  </framework>
+  <data>
+    ${prefix}/share/themes
+  </data>
+  <data>
+    ${prefix}/share/foo/
+  </data>
+  <data dest="${bundle}/Contents/Resources/etc/gtk-2.0/gtkrc">
+    ${project}/gtkrc
+  </data>
+  <icon-theme icons="auto">
+    Tango
+  </icon-theme>
+
+</app-bundle>
