@@ -42,8 +42,10 @@ class Bundler:
                 self.recursive_rm(path)
             else:
                 retval = os.unlink(path)
-
-        os.rmdir(dirname)
+        if (os.path.islink(dirname)):
+            os.unlink(dirname)
+        else:
+            os.rmdir(dirname)
 
     def create_skeleton(self):
         utils.makedirs(self.project.get_bundle_path("Contents/Resources"))
