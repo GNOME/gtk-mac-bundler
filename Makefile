@@ -1,7 +1,7 @@
 PACKAGE = ige-mac-bundler
 VERSION = 0.5.2
 
-bindir=$(HOME)/bin
+bindir=$(HOME)/.local/bin
 
 all:
 	@echo 'Run "make install" to install.'
