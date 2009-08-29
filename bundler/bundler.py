@@ -20,6 +20,9 @@ class Bundler:
         # List of paths that should be recursively searched for
         # binaries that are used to find library dependencies.
         self.binary_paths = []
+        #List of frameworks moved into the bundle which need to be set
+        #up for private use.
+        self.frameworks = []
 
         # Create the bundle in a temporary location first and move it
         # to the final destination when done.
@@ -352,6 +355,33 @@ class Bundler:
         #    for line in f:
         #        print line
 
+        for framework in self.frameworks:
+            fw_name, ext = os.path.splitext(os.path.basename(framework))
+            fwl = os.path.join(framework, fw_name)
+            print "Importing Framework: " + fwl
+# Fix the framework IDs
+            cmd = os.path.join(os.path.dirname(__file__), "run-install-name-tool-change.sh") + " " + fwl + " " + fw_name + " Frameworks" + " id"
+            f = os.popen(cmd)
+            for line in f:
+                print line
+# Fix the dependencies in other libraries
+            for path in paths:
+                cmd = os.path.join(os.path.dirname(__file__), "run-install-name-tool-change.sh") + " " + path + " " + fw_name + " Frameworks/" + fw_name + " change"
+                f = os.popen(cmd)
+                for line in f:
+                    print line
+#fix the dependencies in frameworks
+            for ufw in self.frameworks:
+                ufw_name, ext = os.path.splitext(os.path.basename(ufw))
+                if ufw_name == fw_name:
+                    continue
+                ufwl = os.path.join(ufw, ufw_name)
+                cmd = os.path.join(os.path.dirname(__file__), "run-install-name-tool-change.sh") + " " + ufwl + " " + fw_name + " Frameworks/" + fw_name + " change"
+                f = os.popen(cmd)
+                for line in f:
+                    print line
+
+
     def strip_debugging(self):
         paths = self.list_copied_binaries()
         for path in paths:
@@ -470,7 +500,8 @@ class Bundler:
         # Frameworks
         frameworks = self.project.get_frameworks()
         for path in frameworks:
-            self.copy_path(path)
+            dest = self.copy_path(path)
+            self.frameworks.append(dest)
 
         self.copy_icon_themes()
 
