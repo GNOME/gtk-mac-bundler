@@ -28,7 +28,7 @@ class Bundler:
 
     def recursive_rm(self, dirname):
         # Extra safety ;)
-        if dirname in [ "/", os.getenv("HOME"), os.path.join(os.getenv("HOME"), "Desktop") ]:
+        if dirname in [ "/", os.getenv("HOME"), os.path.join(os.getenv("HOME"), "Desktop"), self.project.get_meta().dest ]:
             print "Eek, trying to remove a bit much, eh? (%s)" % (dirname)
             sys.exit(1)
 
