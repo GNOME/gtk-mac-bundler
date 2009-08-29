@@ -261,6 +261,7 @@ class Bundler:
         # FIXME: Should filter this list so it only contains .so,
         # .dylib, and executable binaries.
         #return filter(lambda l: l.endswith(".so") or l.endswith(".dylib") or os.access(l, os.X_OK), paths)
+        paths = list(set(paths))
         return paths
 
     def resolve_library_dependencies(self):
