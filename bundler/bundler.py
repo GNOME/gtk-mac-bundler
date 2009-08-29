@@ -339,7 +339,7 @@ class Bundler:
             prefix_path = self.project.get_prefix(prefix)
             print "Going through prefix: " + prefix_path
             for path in paths:
-                cmd = os.path.join(os.path.dirname(__file__), "run-install-name-tool-change.sh") + " " + path + " " + prefix_path
+                cmd = os.path.join(os.path.dirname(__file__), "run-install-name-tool-change.sh") + " " + path + " " + prefix_path + " Resources" + " change"
                 f = os.popen(cmd)
                 for line in f:
                     print line
