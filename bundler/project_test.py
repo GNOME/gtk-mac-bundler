@@ -165,4 +165,14 @@ class Project_Test(unittest.TestCase):
                              "${bundle}/Contents/Resources/etc/gtk-2.0/gtkrc", 
                              "Data[2] Destination %s" % data[2].dest)
 
+    def test_p_get_translations(self):
+        trans = self.goodproject.get_translations()
+        self.failUnlessEqual(len(trans), 1, 
+                             "Wrong number of translations %d" % len(trans))
+        self.failUnlessEqual(trans[0].name, "foo", 
+                             "Bad translation name %s" % trans[0].name)
+        self.failUnlessEqual(trans[0].source, "${prefix}/share/locale",
+                             "Bad translation source %s" % trans[0].source)
+
+
         

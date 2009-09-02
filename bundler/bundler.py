@@ -454,6 +454,30 @@ class Bundler:
             cmd = "gtk-update-icon-cache -f " + path + " 2>/dev/null"
             os.popen(cmd)
 
+    def copy_translations(self):
+        translations = self.project.get_translations()
+        prefix = self.project.get_prefix()
+        for program in translations:
+            source = self.project.evaluate_path(program.source)
+
+
+        def name_filter(filename):
+            path, fname = os.path.split(filename)
+            name, ext = os.path.splitext(fname)
+            if name != program.name:
+                return False
+            elif ext not in (".mo", ".po"):
+                return False
+            else:
+                return True
+
+        for root, trees, files in os.walk(source):
+            for file in filter(name_filter, files):
+                path = os.path.join(root, file)
+                self.copy_path(Path("${prefix}" + path[len(prefix):], 
+                                    program.dest))
+
+
     def run(self):
         # Remove the temp location forcefully.
         path = self.project.evaluate_path(self.bundle_path)
@@ -497,6 +521,9 @@ class Bundler:
         # Data
         for path in self.project.get_data():
             self.copy_path(path)
+        
+        # Translaations
+        self.copy_translations()
 
         # Frameworks
         frameworks = self.project.get_frameworks()

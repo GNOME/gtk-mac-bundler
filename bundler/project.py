@@ -151,6 +151,26 @@ class Binary(Path):
         return binary
     from_node = classmethod(from_node)
 
+class Translation(Path):
+    def __init__(self, name, sourcepath, destpath):
+        Path.__init__(self, sourcepath, destpath)
+        self.name = name
+
+    def from_node(cls, node):
+        source = utils.node_get_string(node)
+        dest = node.getAttribute("dest")
+        if len(dest) == 0:
+            dest = None
+        name = node.getAttribute("name")
+        if len(name) == 0:
+            raise "The tag 'translations' must have a 'name' property"
+
+        return Translation(name, source, dest)
+    from_node = classmethod(from_node)
+
+
+        
+
 class Data(Path):
     pass
 
@@ -308,6 +328,13 @@ class Project:
         for node in nodes:
             frameworks.append(Framework.from_node(node))
         return frameworks
+
+    def get_translations(self):
+        translations = []
+        nodes = utils.node_get_elements_by_tag_name(self.root, "translations")
+        for node in nodes:
+            translations.append(Translation.from_node(node))
+        return translations
 
     def get_main_binary(self):
         node = utils.node_get_element_by_tag_name(self.root, "main-binary")

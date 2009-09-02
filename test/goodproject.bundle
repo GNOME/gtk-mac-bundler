@@ -43,5 +43,8 @@
   <icon-theme icons="auto">
     Tango
   </icon-theme>
+  <translations name="foo">
+    ${prefix}/share/locale
+  </translations>
 
 </app-bundle>
