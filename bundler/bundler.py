@@ -58,6 +58,7 @@ class Bundler:
         path = self.project.get_bundle_path("Contents", "PkgInfo")
         path = self.project.evaluate_path(path)
         f = open (path, "w")
+        f.write(self.plist.CFBundlePackageType)
         f.write(self.plist.CFBundleSignature)
         f.close()
 
