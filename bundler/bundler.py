@@ -63,7 +63,7 @@ class Bundler:
 
     def copy_plist(self):
         path = Path(self.project.get_plist_path(),
-                    self.project.get_bundle_path("Contents"))
+                    self.project.get_bundle_path("Contents/Info.plist"))
         self.copy_path(path)
 
     def create_pango_setup(self):
