@@ -310,6 +310,12 @@ class Bundler:
 
             lines = filter(prefix_filter, [line.strip() for line in f])
             lines = map(relative_path_map, lines)
+#When you need to track down errors, uncomment this blocK
+#            for path in paths:
+#                cmd = "otool -L %s" % path
+#                print path
+#                f = os.popen(cmd)
+#                lines = filter(prefix_filter, [line.strip() for line in f])
 
             p = re.compile("(.*\.dylib\.?.*)\s\(compatibility.*$")
             lines = utils.filterlines(p, lines)
