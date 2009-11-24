@@ -244,7 +244,7 @@ class Bundler:
                 elif e.errno == errno.EEXIST:
                     print "Warning, path already exits: " + dest
                 else:
-                    print "Error when copying file: " + globbed_source
+                    print "Error %s when copying file: %s" %( str(e), globbed_source )
                     sys.exit(1)
         return dest
 
