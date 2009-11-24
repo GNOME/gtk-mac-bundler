@@ -464,8 +464,6 @@ class Bundler:
     def copy_translations(self):
         translations = self.project.get_translations()
         prefix = self.project.get_prefix()
-        for program in translations:
-            source = self.project.evaluate_path(program.source)
 
 
         def name_filter(filename):
@@ -478,11 +476,13 @@ class Bundler:
             else:
                 return True
 
-        for root, trees, files in os.walk(source):
-            for file in filter(name_filter, files):
-                path = os.path.join(root, file)
-                self.copy_path(Path("${prefix}" + path[len(prefix):], 
-                                    program.dest))
+        for program in translations:
+            source = self.project.evaluate_path(program.source)
+            for root, trees, files in os.walk(source):
+                for file in filter(name_filter, files):
+                    path = os.path.join(root, file)
+                    self.copy_path(Path("${prefix}" + path[len(prefix):], 
+                                        program.dest))
 
 
     def run(self):
