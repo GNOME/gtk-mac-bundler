@@ -145,8 +145,6 @@ class Binary(Path):
 
         if not binary.source:
             raise "The tag 'binary' must have a 'source' property"
-        if binary.dest:
-            raise "The tag 'binary' is not allowed to have a 'dest' property"
 
         return binary
     from_node = classmethod(from_node)
