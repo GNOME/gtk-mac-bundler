@@ -529,7 +529,7 @@ class Bundler:
         for path in self.project.get_data():
             self.copy_path(path)
         
-        # Translaations
+        # Translations
         self.copy_translations()
 
         # Frameworks
