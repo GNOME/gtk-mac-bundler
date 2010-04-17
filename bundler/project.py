@@ -10,7 +10,7 @@ import utils
 # Base class for anything that can be copied into a bundle with a
 # source and dest.
 class Path:
-    def __init__(self, source, dest=None):
+    def __init__(self, source, dest=None, recurse=False):
         if source and len(source) == 0:
             source = None
         if dest and len(dest) == 0:
@@ -23,17 +23,22 @@ class Path:
             
         self.source = source
         self.dest = dest
+        self.recurse = recurse
 
     def from_node(cls, node, validate=True):
         source = utils.node_get_string(node)
         dest = node.getAttribute("dest")
+        recurse = node.getAttribute("recurse")
         if len(dest) == 0:
             dest = None
-
+        if recurse == "True":
+            recurse = True
+        else:
+            recurse = False
         if validate:
             Path.validate(source, dest)
             
-        return Path(source, dest)
+        return Path(source, dest, recurse)
     from_node = classmethod(from_node)
 
     def validate(cls, source, dest):
