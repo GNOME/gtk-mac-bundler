@@ -185,6 +185,7 @@ class Bundler:
     # Copies from Path.source to Path.dest, evaluating any variables
     # in the paths, and returns the real dest.
     def copy_path(self, Path):
+        _doRecurse = False
         source = self.project.evaluate_path(Path.source)
         if Path.dest:
             dest = self.project.evaluate_path(Path.dest)
@@ -213,6 +214,8 @@ class Bundler:
 
         if p.search(source_tail):
             source_check = source_parent
+            if Path.recurse:
+                _doRecurse = True
         else:
             source_check = source
         if not os.path.exists(source_check):
@@ -224,28 +227,48 @@ class Bundler:
         if p.search(dest_tail):
             dest = dest_parent
 
-        for globbed_source in glob.glob(source):
-            try:
-                if os.path.isdir(globbed_source):
-                    #print "dir: %s => %s" % (globbed_source, dest)
-                    dir_util.copy_tree (str(globbed_source), str(dest),
-                                        preserve_mode=1,
-                                        preserve_times=1,
-                                        preserve_symlinks=1,
-                                        update=1,
-                                        verbose=1,
-                                        dry_run=0)
-                else:
-                    #print "file: %s => %s" % (globbed_source, dest)
-                    shutil.copy(globbed_source, dest)
-            except EnvironmentError, e:
-                if e.errno == errno.ENOENT:
-                    print "Warning, source file missing: " + globbed_source
-                elif e.errno == errno.EEXIST:
-                    print "Warning, path already exits: " + dest
-                else:
-                    print "Error %s when copying file: %s" %( str(e), globbed_source )
-                    sys.exit(1)
+        if _doRecurse:
+            for root, dirs, files in os.walk(source_parent):
+                destdir = os.path.join(dest,
+                                       os.path.relpath(root, source_parent))
+                utils.makedirs(destdir)
+                for globbed_source in glob.glob(os.path.join(root,
+                                                             source_tail)):
+                    try:
+#                        print "Copying %s to %s" % (globbed_source, destdir)
+                        shutil.copy(globbed_source, destdir)
+                    except EnvironmentError, e:
+                        if e.errno == errno.ENOENT:
+                            print "Warning, source file missing: " + globbed_source
+                        elif e.errno == errno.EEXIST:
+                            print "Warning, path already exits: " + dest
+                        else:
+                            print "Error %s when copying file: %s" % ( str(e), globbed_source )
+                            sys.exit(1)
+
+        else:
+            for globbed_source in glob.glob(source):
+                try:
+                    if os.path.isdir(globbed_source):
+                        #print "dir: %s => %s" % (globbed_source, dest)
+                        dir_util.copy_tree (str(globbed_source), str(dest),
+                                            preserve_mode=1,
+                                            preserve_times=1,
+                                            preserve_symlinks=1,
+                                            update=1,
+                                            verbose=1,
+                                            dry_run=0)
+                    else:
+                        #print "file: %s => %s" % (globbed_source, dest)
+                        shutil.copy(globbed_source, dest)
+                except EnvironmentError, e:
+                    if e.errno == errno.ENOENT:
+                        print "Warning, source file missing: " + globbed_source
+                    elif e.errno == errno.EEXIST:
+                        print "Warning, path already exits: " + dest
+                    else:
+                        print "Error %s when copying file: %s" %( str(e), globbed_source )
+                        sys.exit(1)
         return dest
 
     # Lists all the binaries copied in so far. Used in the library
