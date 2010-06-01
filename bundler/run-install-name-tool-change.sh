@@ -12,10 +12,11 @@ ACTION=$4
 
 if [ "x$ACTION" == "xchange" ]; then
     libs="`otool -L $LIBRARY 2>/dev/null | fgrep compatibility | cut -d\( -f1 | grep $WRONG_PREFIX | sort | uniq`"
-
     for lib in $libs; do
-	fixed=`echo $lib | sed -e s,\$WRONG_PREFIX,\$RIGHT_PREFIX,`
-	install_name_tool -change $lib $fixed $LIBRARY
+	if ! echo $lib | grep --silent "@executable_path" ; then
+	    fixed=`echo $lib | sed -e s,\$WRONG_PREFIX,\$RIGHT_PREFIX,`
+	    install_name_tool -change $lib $fixed $LIBRARY
+	fi
     done;
 elif [ "x$ACTION" == "xid" ]; then
     lib="`otool -D $LIBRARY 2>/dev/null | grep ^$WRONG_PREFIX`"
