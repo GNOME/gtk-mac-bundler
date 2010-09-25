@@ -3,7 +3,7 @@ import os, errno, glob
 import dircache, shutil
 import re
 from plistlib import Plist
-from distutils import dir_util
+from distutils import dir_util, file_util
 
 from project import *
 import utils
@@ -260,7 +260,13 @@ class Bundler:
                                             dry_run=0)
                     else:
                         #print "file: %s => %s" % (globbed_source, dest)
-                        shutil.copy(globbed_source, dest)
+                        file_util.copy_file (str(globbed_source), str(dest),
+                                            preserve_mode=1,
+                                            preserve_times=1,
+                                            update=1,
+                                            link=None,
+                                            verbose=1,
+                                            dry_run=0)
                 except EnvironmentError, e:
                     if e.errno == errno.ENOENT:
                         print "Warning, source file missing: " + globbed_source
