@@ -524,7 +524,12 @@ class Bundler:
                 return True
 
         for program in translations:
+            if program.name == "" or program.name == None:
+                raise "No program name to tranlate!"
+
             source = self.project.evaluate_path(program.source)
+            if source == None:
+                raise "Failed to parse translation source!"
             for root, trees, files in os.walk(source):
                 for file in filter(name_filter, files):
                     path = os.path.join(root, file)
