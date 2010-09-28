@@ -140,15 +140,32 @@ class Bundler:
         fout.close()
 
     def create_gdk_pixbuf_loaders_setup(self):
-        modulespath = self.project.get_bundle_path("Contents/Resources/lib/gtk-2.0/" +
-                                                   "${pkg:gtk+-2.0:gtk_binary_version}/"+
+        modulespath = ""
+        if os.path.exists(os.path.join(self.project.get_prefix(), "lib", 
+                                       "gdk-pixbuf-2.0")):
+
+            modulespath = self.project.get_bundle_path("Contents/Resources/lib/",
+                                                     "gdk_pixbuf-2.0", 
+                                                     "${pkg:gdk-pixbuf-2.0:gdk_pixbuf_binary_version}",
+                                                     "loaders")
+        elif os.path.exists(os.path.join(self.project.get_prefix(), "lib", 
+                                       "gdk-pixbuf-3.0")):
+            modulespath = self.project.get_bundle_path("Contents/Resources/lib/",
+                                                     "gdk_pixbuf-3.0", 
+                                                     "${pkg:gdk-pixbuf-3.0:gdk_pixbuf_binary_version}",
+                                                     "loaders")
+        else:
+            modulespath = self.project.get_bundle_path("Contents/Resources/lib/",
+                                                   self.project.get_gtk_dir(),
+                                                   "${pkg:" + self.meta.gtk + ":gtk_binary_version}",
                                                    "loaders")
         modulespath = utils.evaluate_pkgconfig_variables (modulespath)
 
         cmd = "GDK_PIXBUF_MODULEDIR=" + modulespath + " gdk-pixbuf-query-loaders"
         f = os.popen(cmd)
 
-        path = self.project.get_bundle_path("Contents/Resources/etc/gtk-2.0")
+        path = self.project.get_bundle_path("Contents/Resources/etc/", 
+                                            self.project.get_gtk_dir())
         utils.makedirs(path)
         fout = open(os.path.join(path, "gdk-pixbuf.loaders"), "w")
 
