@@ -125,6 +125,12 @@ class Meta:
         self.overwrite = utils.node_get_property_boolean(child, "overwrite", False)
         self.dest = utils.node_get_string(child, "${project}")
 
+        child = utils.node_get_element_by_tag_name(node, "gtk")
+        if child:
+            self.gtk = utils.node_get_string(child)
+        else:
+            self.gtk = "gtk+-2.0"
+
 class Framework(Path):
     def __init__(self, source):
         Path.__init__(self, source, self.get_dest_path_from_source(source))
@@ -221,6 +227,7 @@ class Project:
         # The directory the project file is in (as opposed to
         # project_path which is the path including the filename).
         self.project_dir, tail = os.path.split(project_path)
+        self.meta = self.get_meta()
 
         plist_path = self.get_plist_path()
         try:
@@ -232,10 +239,10 @@ class Project:
             else:
                 raise
         self.name = plist.CFBundleExecutable
-
+ 
     """
-     Replace ${env:?}, ${prefix}, ${prefix:?}, ${project},
-     ${pkg:?:?}, ${bundle}, and ${name} variables.
+     Replace ${env:?}, ${prefix}, ${prefix:?}, ${project}, ${gtk}, ${gtkdir},
+     ${gtkversion}, ${pkg:?:?}, ${bundle}, and ${name} variables.
     """
     def evaluate_path(self, path, include_bundle=True):
         p = re.compile("^\${prefix}")
@@ -248,6 +255,15 @@ class Project:
 
         p = re.compile("^\${project}")
         path = p.sub(self.project_dir, path)
+
+        p = re.compile("\${gtk}")
+        path = p.sub(self.meta.gtk, path)
+
+        p = re.compile("\${gtkdir}")
+        path = p.sub(self.get_gtk_dir(), path)
+
+        p = re.compile("\${gtkversion}")
+        path = p.sub(self.get_gtk_version(), path)
 
         try:
             p = re.compile("\${name}")
@@ -320,6 +336,18 @@ class Project:
     def get_meta(self):
         node = utils.node_get_element_by_tag_name(self.root, "meta")
         return Meta(node)
+
+    def get_gtk_version(self):
+        if self.meta.gtk == "gtk+-3.0":
+            return "3.0"
+        else:
+            return "2.0"
+
+    def get_gtk_dir(self):
+        if self.meta.gtk == "gtk+-3.0":
+            return "gtk-3.0"
+        else:
+            return "gtk-2.0"
 
     def get_environment(self):
         node = utils.node_get_element_by_tag_name(self.root, "environment")

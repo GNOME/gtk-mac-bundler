@@ -26,12 +26,12 @@ class Bundler:
 
         # Create the bundle in a temporary location first and move it
         # to the final destination when done.
-        dest = project.get_meta().dest
-        self.bundle_path = os.path.join(dest, "." + project.get_name() + ".app")
+        self.meta = project.get_meta()
+        self.bundle_path = os.path.join(self.meta.dest, "." + project.get_name() + ".app")
 
     def recursive_rm(self, dirname):
         # Extra safety ;)
-        if dirname in [ "/", os.getenv("HOME"), os.path.join(os.getenv("HOME"), "Desktop"), self.project.get_meta().dest ]:
+        if dirname in [ "/", os.getenv("HOME"), os.path.join(os.getenv("HOME"), "Desktop"), self.meta.dest ]:
             print "Eek, trying to remove a bit much, eh? (%s)" % (dirname)
             sys.exit(1)
 
@@ -117,10 +117,11 @@ class Bundler:
 
     def create_gtk_immodules_setup(self):
         path = self.project.get_bundle_path("Contents/Resources")
-        cmd = "GTK_EXE_PREFIX=" + path + " gtk-query-immodules-2.0"
+        cmd = "GTK_EXE_PREFIX=" + path + " gtk-query-immodules-" + self.project.get_gtk_version()
         f = os.popen(cmd)
 
-        path = self.project.get_bundle_path("Contents/Resources/etc/gtk-2.0")
+        path = self.project.get_bundle_path("Contents/Resources/etc/", 
+                                            self.project.get_gtk_dir())
         utils.makedirs(path)
         fout = open(os.path.join(path, "gtk.immodules"), "w")
 
@@ -328,7 +329,7 @@ class Bundler:
             cmd = ''.join(cmds)
             f = os.popen(cmd)
 
-            prefixes = self.project.get_meta().prefixes
+            prefixes = self.meta.prefixes
 
             def relative_path_map(line):
                 if not os.path.isabs(line):
@@ -389,7 +390,7 @@ class Bundler:
         print "Running install name tool"
 
         paths = self.list_copied_binaries()
-        prefixes = self.project.get_meta().prefixes
+        prefixes = self.meta.prefixes
 
         # First change all references in libraries.
         for prefix in prefixes:
@@ -536,12 +537,10 @@ class Bundler:
         path = self.project.evaluate_path(self.bundle_path)
         self.recursive_rm(path)
 
-        meta = self.project.get_meta()
-
-        final_path = os.path.join(meta.dest, self.project.get_name() + ".app")
+        final_path = os.path.join(self.meta.dest, self.project.get_name() + ".app")
         final_path = self.project.evaluate_path(final_path)
 
-        if not meta.overwrite and os.path.exists(final_path):
+        if not self.meta.overwrite and os.path.exists(final_path):
             print "Bundle already exists: " + final_path
             sys.exit(1)
 
@@ -590,12 +589,12 @@ class Bundler:
         self.create_gtk_immodules_setup()
         self.create_gdk_pixbuf_loaders_setup()
 
-        if meta.run_install_name_tool:
+        if self.meta.run_install_name_tool:
             self.run_install_name_tool()
 
         #self.strip_debugging()
 
-        if meta.overwrite:
+        if self.meta.overwrite:
             self.recursive_rm(final_path)
         shutil.move(self.project.get_bundle_path(), final_path)
 

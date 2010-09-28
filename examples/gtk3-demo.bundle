@@ -20,60 +20,41 @@
     -->
     <destination overwrite="yes">${env:HOME}/Desktop</destination>
 
-    <!-- Comment this out to keep the install names in binaries.  -->
+    <image>
+      <!-- Not implemented yet (DMG image). -->
+    </image>
+
+    <!-- Comment this out to keep the install names in binaries -->
     <run-install-name-tool/>
-
-    <!--A launcher script is pretty much mandatory here so that we can
-         set $PYTHON to point to the python in the bundle.
+ 
+    <!-- Optionally specify a launcher script to use. If the
+         application sets up everything needed itself, like
+         environment variable, linker paths, etc, a launcher script is
+         not needed. If the source path is left out, the default
+         script will be used.
     -->
-    <launcher-script>${project}/pygtk-demo.sh</launcher-script >
+    <launcher-script>${project}/launcher.sh</launcher-script >
 
-     <!-- Indicate the active gtk version to use. This is needed only
+    <!-- Not implemented: Optional runtime, could be python or mono
+         for example.
+    -->
+    <!-- runtime copy="yes">/usr/bin/python</runtime -->
+    <!-- Indicate the active gtk version to use. This is needed only
          for gtk+-3.0 projects. -->
-    <!--gtk>gtk+-2.0</gtk-->
- </meta>
+    <gtk>gtk+-3.0</gtk>
+  </meta>
 
   <!-- The special macro "${project}" refers to the directory where
        this bundle file is located. The application name and bundle
        identifier are taken from the plist file.
   -->
-  <plist>${project}/Info-pygtk-demo.plist</plist>
+  <plist>${project}/Info-gtk-demo.plist</plist>
 
- <!-- This is mandatory, and the result gets named to the appname from
-      Info.plist with bin tacked on the end, in this example,
-      PyGtkDemo-bin. Bunlder won't let us use the one from $project,
-      so we use the original and ignore it. If your original will work
-      in the bundle, you can use this instead.-->
- <main-binary>
-     ${prefix}/bin/pygtk-demo
-  </main-binary>
-
-  <!-- We need to pack our own Python to avoid compatibility problems. -->
-  <binary>${prefix}/bin/python</binary>
-
-  <!-- This is a modified pygtk-demo which points to the python module
-       in the bundle instead of in $prefix. Note that pygtk-demo.sh
-       calls this instead of PyGtkDemo-bin as it usually would. -->
-  <data dest="${bundle}/Contents/MacOS/">
-    ${project}/pygtk-demo
-  </data>
-
-  <!-- Copy in libpyglib, which will pull in other dependencies we need -->
-  <binary>
-    ${prefix}/lib/libpyglib-2.0-python.0.dylib
-  </binary>
-  <!-- Gtk+ is required by python modules which aren't searched for
-       dependencies, so we have to pull it in explicitly. It will
-       bring Pango and Cairo with it. Note the use of ${gtkversion},
-       which expands to either 2.0 or 3.0, depending on which value of
-       gtk is specified.-->
-  <binary>
-    ${prefix}/lib/libgtk-quartz-${gtkversion}.0.dylib
-  </binary>
+  <main-binary>${prefix}/bin/gtk3-demo</main-binary>
 
   <!-- Copy in GTK+ modules. Note the ${gtkdir} macro, which expands
        to the correct library subdirectory for the specified gtk
-       version.
+       version. 
   -->
   <binary>
      ${prefix}/lib/${gtkdir}/modules/*.so
@@ -82,7 +63,7 @@
   <!-- Copy in GTK+ theme engines. Note the use of the
        "${pkg:module:variable}" macro, which evaluates to a pkg-config
        variable in the specified module. Note that any libraries that
-       binaries link to are also copied in automatically. Note also
+       binaries link to are also copied in automatically.  Note also
        the included ${gtk} macro, which gets the correct package name
        to get. -->
   <binary>
@@ -93,24 +74,20 @@
        want to copy in to the bundle. The "dest" attribute is
        optional, as usual. Bundler will find all translations of that
        library/program under the indicated directory and copy them.-->
-  <translations dest="${bundle}/Contents/Resources" name="gtk20">
-    ${prefix}/share/locale
-  </translations>
-
-  <translations dest="${bundle}/Contents/Resources" name="gtk20">
+  <translations dest="${bundle}/Contents/Resources" name="gtk30">
     ${prefix}/share/locale
   </translations>
 
 
-  <!-- We have to pull in the python modules, which are mixed python
-       and loadable modules.  -->
-  <data>
-    ${prefix}/lib/python2.6/
-  </data>
-
-  <data>
-    ${prefix}/lib/pygtk/2.0/
-  </data>
+  <!-- Data to copy in, usually Glade/UI files, images, sounds files
+       etc. The destination inside the bundle can be specified if the
+       files should end up at a different location, by using the
+       "dest" property. The destination must then start with the macro
+       "${bundle}", which refers to the bundle root directory.
+  -->
+  <!-- data>
+    ${prefix}/share/gtk3-demo
+  </data -->
 
   <!-- Copy in the themes data. You may want to trim this to save space
        in your bundle. -->
@@ -130,7 +107,7 @@
        theme of choice if they provide and example, or you can just
        change the source path. -->
 
-  <data dest="${bundle}/Contents/Resources/etc/${gtkdir}/gtkrc">
+  <data dest="${bundle}/Contents/Resources/etc/${gtk}/gtkrc">
     ${project}/gtkrc
   </data>
 
