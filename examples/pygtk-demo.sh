@@ -25,7 +25,7 @@ export GDK_PIXBUF_MODULE_FILE="$bundle_etc/gtk-2.0/gdk-pixbuf.loaders"
 export PANGO_RC_FILE="$bundle_etc/pango/pangorc"
 
 #Set $PYTHON to point inside the bundle
-export PYTHON="$bundle_bin/python"
+export PYTHON="$bundle_contents/MacOS/python"
 #Add the bundle's python modules
 PYTHONPATH="$bundle_lib/python2.6:$PYTHONPATH"
 PYTHONPATH="$bundle_lib/python2.6/site-packages:$PYTHONPATH"

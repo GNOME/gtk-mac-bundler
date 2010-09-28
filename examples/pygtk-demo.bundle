@@ -49,7 +49,9 @@
   </main-binary>
 
   <!-- We need to pack our own Python to avoid compatibility problems. -->
-  <binary>${prefix}/bin/python</binary>
+  <binary dest="${bundle_dir}/Contents/MacOS">
+    ${prefix}/bin/python
+  </binary>
 
   <!-- This is a modified pygtk-demo which points to the python module
        in the bundle instead of in $prefix. Note that pygtk-demo.sh
