@@ -146,13 +146,13 @@ class Bundler:
                                        "gdk-pixbuf-2.0")):
 
             modulespath = self.project.get_bundle_path("Contents/Resources/lib/",
-                                                     "gdk_pixbuf-2.0", 
+                                                     "gdk-pixbuf-2.0", 
                                                      "${pkg:gdk-pixbuf-2.0:gdk_pixbuf_binary_version}",
                                                      "loaders")
         elif os.path.exists(os.path.join(self.project.get_prefix(), "lib", 
                                        "gdk-pixbuf-3.0")):
             modulespath = self.project.get_bundle_path("Contents/Resources/lib/",
-                                                     "gdk_pixbuf-3.0", 
+                                                     "gdk-pixbuf-3.0", 
                                                      "${pkg:gdk-pixbuf-3.0:gdk_pixbuf_binary_version}",
                                                      "loaders")
         else:
@@ -161,7 +161,6 @@ class Bundler:
                                                    "${pkg:" + self.meta.gtk + ":gtk_binary_version}",
                                                    "loaders")
         modulespath = utils.evaluate_pkgconfig_variables (modulespath)
-
         cmd = "GDK_PIXBUF_MODULEDIR=" + modulespath + " gdk-pixbuf-query-loaders"
         f = os.popen(cmd)
 
@@ -171,7 +170,6 @@ class Bundler:
         fout = open(os.path.join(path, "gdk-pixbuf.loaders"), "w")
 
         prefix = "\"" + self.project.get_bundle_path("Contents/Resources")
-
         for line in f:
             line = line.strip()
             if line.startswith("#"):
