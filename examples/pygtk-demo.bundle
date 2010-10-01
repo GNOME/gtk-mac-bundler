@@ -49,7 +49,7 @@
   </main-binary>
 
   <!-- We need to pack our own Python to avoid compatibility problems. -->
-  <binary dest="${bundle_dir}/Contents/MacOS">
+  <binary dest="${bundle}/Contents/MacOS">
     ${prefix}/bin/python
   </binary>
 
