@@ -1,0 +1,36 @@
+Changes in O.5.4
+
+ - Bumped rev to 0.5.4 (John Ralls)
+ - Removed giggle.bundle; since there's no giggle any more, there's no point in keeping this around. (John Ralls)
+ - Add Guillaume Lessard's localization code to the example launcher. (John Ralls)
+ - Correct the version strings. (John Ralls)
+ - Restore inadvertently-deleted run-install-name-tool tag to bundle files. (John Ralls)
+ - Fix translation loop (John Ralls)
+ - More descriptive error message for unkown file copying errors (John Ralls)
+ - Add an example pygtk bundle (John Ralls)
+ - Write Package type into PkgInfo. (John Ralls)
+ - Provide a (normally commented out) block which reports each binary file processed so that one can find out which error messages go with which file. (John Ralls)
+ - Force the file copied by a <plist> element to be named Info.plist no matter what it's named originally. (Other plists can be copied using a <data> element.) Obviously, this means there will be only one. (John Ralls)
+
+Changes in O.5.3
+
+ - Bump the version to 0.5.3 (John Ralls)
+ - Add support to copy designated translation files (foo.po and foo.mo) (John Ralls)
+ - Revamped the locale-detection portion of launcher.sh to take into account all four locale-related variables published by Mac OS X (AppleCollationOrder, AppleLocale (including currency) and AppleLanguages). (Guillaume Lessard)
+ - Make sure that the list of paths from list_copied_binaries has no duplicates. (John Ralls)
+ - Process frameworks added to the bundle so that they will be used as private frameworks (otherwise, what's the point of adding them?) (John Ralls)
+ - Prevent recursive_rm from deleting the directory containing the new bundle. (John Ralls)
+ - add ability to run install_name_tool in both id and change mode and to take the interesting part of "RIGHT_PREFIX" from the command line. (John Ralls)
+ - Guard against a path having a link in it. (John Ralls)
+ - Use the same bin-dir that jhbuild does. (John Ralls)
+ - Unit tests for project.py (John Ralls)
+ - Copied in from macosxhints.com, this script will be used for implementing the <dmg> element. (John Ralls)
+ - Add gtk-demo bundle, info.plist, and launcher.sh to test a standard app (Giggle is some imendio thing, and should probably be dropped.) (John Ralls)
+ - Changed function-descriptive comment to docstring (John Ralls)
+
+Changes in O.5.2
+
+ - Bumped Version (John Ralls)
+ - Removed two ToDos that are already done (John Ralls)
+ - Added documentation for libfoo.la modification (John Ralls)
+ - Relocated Data Copy to after binary copies so that libtool files can be specified as data and not get nuked by the cleanup routine in copy binary files. Needed for libraries that are dlopened instead of linked during make. (John Ralls)
