@@ -1,3 +1,42 @@
+Changes in version 0.6.0:
+
+ - Bump Version to 0.6.0 (John Ralls)
+ - Add Changelog-generation to make dist, and add Changelog for older distributions. (John Ralls)
+ - Rewrite of locale detection in the example launcher script. New version is more reliable and gives priority to the languages list rather than the locale setting in Formats. (John Ralls)
+ - Fix typo in pygtk-demo.bundle (John Ralls)
+ - Fix typos in gdk-pixbuf dirnames (John Ralls)
+ - Take destinations out of translation directives; with them in place, we had a single translation file in Contents/Resources instead of the tree of them in Contents/Resources/share/locales (John Ralls)
+ - Put python in Contents/MacOS so that the @executable_path rpaths will work correctly. (John Ralls)
+ - Add some protective code in translations function (John Ralls)
+ - Allow for building gtk+3 bundles (John Ralls)
+ - Work around the move of gdk-pixbuf out of gtk for recent (post 2.21.5/2.90.5) versions. (John Ralls)
+ - Replace shutil.copy with distutils.file_util.copy_file, which is a bit more robust. (John Ralls)
+ - add docs/ to gitignore, so that the product of make docs isn't added to the repo (and doesn't clutter up status) (John Ralls)
+ - If given a wild-card in a source path and if the recurse attribute is set to "True" for the element, copy_path will now walk the tree and create all subdirectories in destination to match those in source, and copy the files which match the wildcard. (John Ralls)
+ - Added new attribute, "recurse", to Path class. (John Ralls)
+ - Protect against adjusting already-adjusted paths (John Ralls)
+ - Fix typo in a comment (John Ralls)
+ - Remove restriction on a destination tag for binaries. (John Ralls)
+
+Changes in version 0.6.0:
+
+ - Add Changelog-generation to make dist, and add Changelog for older distributions. (John Ralls)
+ - Rewrite of locale detection in the example launcher script. New version is more reliable and gives priority to the languages list rather than the locale setting in Formats. (John Ralls)
+ - Fix typo in pygtk-demo.bundle (John Ralls)
+ - Fix typos in gdk-pixbuf dirnames (John Ralls)
+ - Take destinations out of translation directives; with them in place, we had a single translation file in Contents/Resources instead of the tree of them in Contents/Resources/share/locales (John Ralls)
+ - Put python in Contents/MacOS so that the @executable_path rpaths will work correctly. (John Ralls)
+ - Add some protective code in translations function (John Ralls)
+ - Allow for building gtk+3 bundles (John Ralls)
+ - Work around the move of gdk-pixbuf out of gtk for recent (post 2.21.5/2.90.5) versions. (John Ralls)
+ - Replace shutil.copy with distutils.file_util.copy_file, which is a bit more robust. (John Ralls)
+ - add docs/ to gitignore, so that the product of make docs isn't added to the repo (and doesn't clutter up status) (John Ralls)
+ - If given a wild-card in a source path and if the recurse attribute is set to "True" for the element, copy_path will now walk the tree and create all subdirectories in destination to match those in source, and copy the files which match the wildcard. (John Ralls)
+ - Added new attribute, "recurse", to Path class. (John Ralls)
+ - Protect against adjusting already-adjusted paths (John Ralls)
+ - Fix typo in a comment (John Ralls)
+ - Remove restriction on a destination tag for binaries. (John Ralls)
+
 Changes in O.5.4
 
  - Bumped rev to 0.5.4 (John Ralls)
