@@ -103,6 +103,7 @@ class Bundler:
                 line = "@executable_path/../Resources" + line
 
             fout.write(line)
+            fout.write("\n")
         fout.close()
 
         os.unlink(tmp_filename)
