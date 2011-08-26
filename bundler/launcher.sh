@@ -122,7 +122,7 @@ if test -f "$bundle_res/environment.sh"; then
 fi
 
 # Strip out the argument added by the OS.
-if expr "x$1" : '^x-psn_' > /dev/null; then
+if /bin/expr "x$1" : '^x-psn_' > /dev/null; then
     shift 1
 fi
 
