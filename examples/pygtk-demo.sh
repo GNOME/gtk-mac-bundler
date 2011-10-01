@@ -27,8 +27,8 @@ export PANGO_RC_FILE="$bundle_etc/pango/pangorc"
 #Set $PYTHON to point inside the bundle
 export PYTHON="$bundle_contents/MacOS/python"
 #Add the bundle's python modules
-PYTHONPATH="$bundle_lib/python2.6:$PYTHONPATH"
-PYTHONPATH="$bundle_lib/python2.6/site-packages:$PYTHONPATH"
+PYTHONPATH="$bundle_lib/python2.7:$PYTHONPATH"
+PYTHONPATH="$bundle_lib/python2.7/site-packages:$PYTHONPATH"
 #Add our program's modules to $PYTHONPATH. 
 PYTHONPATH="$bundle_lib/pygtk/2.0:$PYTHONPATH"
 export PYTHONPATH

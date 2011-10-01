@@ -111,7 +111,7 @@
   <!-- We have to pull in the python modules, which are mixed python
        and loadable modules.  -->
   <data>
-    ${prefix}/lib/python2.6/
+    ${prefix}/lib/python2.7/
   </data>
 
   <data>
