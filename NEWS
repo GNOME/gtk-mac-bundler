@@ -1,3 +1,24 @@
+NEW IN 0.6.1
+============
+- Change name to gtk-mac-bundler
+- Fix launcher scripts to better handle spaces in paths
+- Adjust paths for gdk-pixbuf moving back into lib/gdk-2.0
+- Lose the GUI. Hope no one was using it.
+
+NEW IN 0.6.0
+============
+- Better Locale Detection in launcher scripts
+- Allow for building Gtk+-3 bundles
+- Adjust paths for gdk-pixbuf moving out of lib/gdk-2.0
+- Add recursive wildcard imports of binaries
+- Allow "dest" tags in binary elements
+
+
+NEW IN 0.5.3
+============
+- Add support for adding translations to bundles
+- Move script install location to ~/.local/bin, matching jhbuild
+
 NEW IN 0.5.1
 ============
 - New URL for gtk-osx

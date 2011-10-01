@@ -1,3 +1,17 @@
+-e Changes in version 0.6.1:
+
+ - Bump version number for release bundler-0.6.1 (John Ralls)
+ - Remove tarring the UI directory from make dist. (John Ralls)
+ - Add .doap file for Gnome.org (John Ralls)
+ - Reflect change to Python2.7 it Gtk-OSX Stable moduleset. (John Ralls)
+ - Ensure that all the latest improvements to the launcher script are incorporated in all versions here. (John Ralls)
+ - Change gtk-mac-bundler to gtk-mac-bundler for transfer to gnome.org. (John Ralls)
+ - Delete old, unused, graphical interface (John Ralls)
+ - Launcher: expr isn't a bash builtin so it needs an absolute path. (John Ralls)
+ - Improve arguments handling in launcher. Thanks to prl <prl@ozemail.com.au> (John Ralls)
+ - Update demo bundle files and launcher script to reflect new location of gdk-pixbuf, and to load the print backends so that printing will work. (John Ralls)
+ - Fix pango.modules generation (Alexander Kojevnikov)
+
 Changes in version 0.6.0:
 
  - Bump Version to 0.6.0 (John Ralls)
