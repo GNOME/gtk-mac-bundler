@@ -1,4 +1,4 @@
-PACKAGE = ige-mac-bundler
+PACKAGE = gtk-mac-bundler
 VERSION = 0.6.0
 OLD_VERSION = 0.5.4
 
@@ -9,8 +9,8 @@ all:
 
 install:
 	@mkdir -p $(bindir)
-	@sed "s,@PATH@,`pwd`,g" < ige-mac-bundler.in > $(bindir)/ige-mac-bundler
-	@chmod a+x $(bindir)/ige-mac-bundler
+	@sed "s,@PATH@,`pwd`,g" < gtk-mac-bundler.in > $(bindir)/gtk-mac-bundler
+	@chmod a+x $(bindir)/gtk-mac-bundler
 
 distdir = $(PACKAGE)-$(VERSION)
 dist:
@@ -24,7 +24,7 @@ dist:
 	rm Changelog.old
 	-rm -rf $(distdir)
 	mkdir $(distdir)
-	cp -p README COPYING NEWS Changelog Makefile ige-mac-bundler.in $(distdir)/
+	cp -p README COPYING NEWS Changelog Makefile gtk-mac-bundler.in $(distdir)/
 	mkdir $(distdir)/ui
 	cp -p ui/* $(distdir)/ui/
 	mkdir $(distdir)/bundler

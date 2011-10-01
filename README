@@ -1,7 +1,7 @@
-Ige Mac Bundler
+Gtk Mac Bundler
 ===============
 
-The script ige-mac-bundler is a helper script that creates application
+The script gtk-mac-bundler is a helper script that creates application
 bundles form GTK+ executables for Mac OS X. The resulting bundle will
 contain a complete self-hosting GTK+ installation, ready to run on any
 computer with Mac OS X 10.4 or later installed.
@@ -30,9 +30,9 @@ Prerequisites
 You need to have a GTK+ installation as done for example by using
 jhbuild as described on the GTK+ OS X project site:
 
-	http://live.gnome.org/GTK%2B/OSX/BuildInstructions
+	http://live.gnome.org/GTK%2B/OSX/Building
 
-The ige-mac-bundler command needs to be run inside an environment
+The gtk-mac-bundler command needs to be run inside an environment
 setup for running the GTK+, for example inside a jhbuild shell.
 
 For the more in-depth parts described here, you are expected to be
@@ -235,9 +235,9 @@ it will cheerfully open either. The problem comes because unlike
 Linux, Mach uses different file extensions and formats, so libtool
 will set up dlopen to search for libfoo.so after it built
 libfoo.dylib. Libtool also makes libfoo.la which will tell dlopen
-where to look, but ige-mac-bundler deletes those files from the
+where to look, but gtk-mac-bundler deletes those files from the
 application bundle. If you're bundling an app that needs libfoo.la,
-just put it in a data element and ige-mac-integration (version 0.5.2
+just put it in a data element and gtk-mac-integration (version 0.5.2
 and later) will copy it in *after* doing the *.l?a cleanup: <data>
 ${prefix}/lib/libfoo*.la </data>
 
@@ -252,7 +252,7 @@ copy. The valid values are:
   auto - tries to copy all icons names that match strings in all
          copied binaries; this will not always work perfectly but is
          good for getting started, and for simple applications
- 
+
   all - copies all icons
 
   none - copies no icons, this can be used in combination with
@@ -268,22 +268,15 @@ required by GTK+. An example:
   </icon-theme>
 
 
-Unimplemented so far
---------------------
-
-- Translations - you can copy them manually using the data tag
-
-- Built-in support for PyGTK or Mono applications
-
 
 Debugging the bundle
 ====================
 
 In order to debug the created app bundle (most notably the launcher
-script), you can set the environment variable IGE_DEBUG_LAUNCHER before
+script), you can set the environment variable GTK_DEBUG_LAUNCHER before
 starting the applications directly from a terminal. e.g.:
 
-  IGE_DEBUG_LAUNCHER=yes MyApp.app/Contents/MacOS/MyApp
+  GTK_DEBUG_LAUNCHER=yes MyApp.app/Contents/MacOS/MyApp
 
 This will print out the steps performed by the launcher script before
 the application executable is started.
@@ -294,7 +287,7 @@ output from the application the console log window.
 
 To run the application under gdb, do:
 
-  IGE_DEBUG_GDB=yes MyApp.app/Contents/MacOS/MyApp
+  GTK_DEBUG_GDB=yes MyApp.app/Contents/MacOS/MyApp
 
 
 License
