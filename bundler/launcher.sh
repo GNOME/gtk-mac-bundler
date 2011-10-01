@@ -10,13 +10,14 @@ else
     EXEC=exec
 fi
 
-name="`basename $0`"
-tmp="`pwd`/$0"
+name=`basename "$0"`
+tmp="$0"
 tmp=`dirname "$tmp"`
 tmp=`dirname "$tmp"`
 bundle=`dirname "$tmp"`
 bundle_contents="$bundle"/Contents
 bundle_res="$bundle_contents"/Resources
+#bundle_fw="$bundle_contents"/Frameworks #uncomment if you need it
 bundle_lib="$bundle_res"/lib
 bundle_bin="$bundle_res"/bin
 bundle_data="$bundle_res"/share
@@ -33,6 +34,9 @@ export GTK2_RC_FILES="$bundle_etc/gtk-2.0/gtkrc"
 export GTK_IM_MODULE_FILE="$bundle_etc/gtk-2.0/gtk.immodules"
 export GDK_PIXBUF_MODULE_FILE="$bundle_etc/gtk-2.0/gdk-pixbuf.loaders"
 export PANGO_RC_FILE="$bundle_etc/pango/pangorc"
+
+# Localization settings. It's better to do this inside your program
+# using NSLocale if possible.
 
 # Set the locale-related variables appropriaty for GnuCash.
 unset LANG LC_MESSAGES LC_MONETARY

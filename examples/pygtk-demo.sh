@@ -1,7 +1,7 @@
 #!/bin/sh
 
-name="`basename $0`"
-tmp="`pwd`/$0"
+name=`basename "$0"`
+tmp="$0"
 tmp=`dirname "$tmp"`
 tmp=`dirname "$tmp"`
 bundle=`dirname "$tmp"`
@@ -54,7 +54,7 @@ if test -f "$bundle_res/environment.sh"; then
 fi
 
 # Strip out the argument added by the OS.
-if [ x`echo "x$1" | sed -e "s/^x-psn_.*//"` == x ]; then
+if /bin/expr "x$1" : "x-psn_.*" > /dev/null; then
     shift 1
 fi
 
