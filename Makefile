@@ -25,8 +25,6 @@ dist:
 	-rm -rf $(distdir)
 	mkdir $(distdir)
 	cp -p README COPYING NEWS Changelog Makefile gtk-mac-bundler.in $(distdir)/
-	mkdir $(distdir)/ui
-	cp -p ui/* $(distdir)/ui/
 	mkdir $(distdir)/bundler
 	cp -p bundler/*.py $(distdir)/bundler/
 	cp -p bundler/*.sh $(distdir)/bundler/
