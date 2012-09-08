@@ -448,6 +448,25 @@ class Bundler:
                 os.system("strip -ur " + path + " 2>/dev/null")
                 os.chmod(path, 0555)
 
+#
+# If you want to sign your application, set $APPLICATION_CERT with the
+# appropriate certificate name in your default Keychain. This function
+# will sign every binary in the bundle with the certificate and the
+# bundle's id string.
+#
+    def sign_binaries(self):
+        if not os.environ.has_key("APPLICATION_CERT"):
+            return
+        cert = os.getenv("APPLICATION_CERT")
+        paths = self.list_copied_binaries()
+        ident = self.project.get_bundle_id()
+        for path in paths:
+            cmdargs = ['codesign', '-s', cert, '-i', ident, path]
+            result = os.spawnvp(os.P_WAIT, 'codesign', cmdargs)
+
+            if result:
+                raise OSError, '"' + " ".join(cmdargs) + '" failed %d' % result
+
     def copy_icon_themes(self):
         all_icons = set()
 
@@ -555,11 +574,6 @@ class Bundler:
         # Note: could move this to xml file...
         self.copy_path(Path("${prefix}/lib/charset.alias"))
 
-        # Launcher script, if necessary.
-        launcher_script = self.project.get_launcher_script()
-        if launcher_script:
-            self.copy_path(launcher_script)
-
         # Main binary
         path = self.project.get_main_binary()
         source = self.project.evaluate_path(path.source)
@@ -598,6 +612,19 @@ class Bundler:
 
         #self.strip_debugging()
 
+        self.sign_binaries()
+
+        # Launcher script, if necessary.
+        launcher_script = self.project.get_launcher_script()
+        if launcher_script:
+            path = self.copy_path(launcher_script)
+            if os.environ.has_key("APPLICATION_CERT"):
+                cert = os.environ["APPLICATION_CERT"]
+                ident = self.project.get_bundle_id()
+                cmdargs = ['codesign', '-s', cert, '-i', ident, "-f", path]
+                result = os.spawnvp(os.P_WAIT, 'codesign', cmdargs)
+                if result:
+                    raise OSError, '"'+ " ".join(cmdargs) + '" failed %d' % result
         if self.meta.overwrite:
             self.recursive_rm(final_path)
         shutil.move(self.project.get_bundle_path(), final_path)
