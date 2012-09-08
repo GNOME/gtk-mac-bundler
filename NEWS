@@ -1,3 +1,8 @@
+NEW IN 0.7.0
+============
+ - Bundler will now sign all binary and executable files in the bundle if $APPLICATION_CERT is set with a valid signing certificate. (John Ralls)
+ - If available, use CFBundleName instead of CFBundleExecutable for the bundle name. In particular, this permits the executable or launcher to have a lower-case name and still upper-case the name displayed in Finder and on the Menubar. (Julien Woillez)
+
 NEW IN 0.6.1
 ============
 - Change name to gtk-mac-bundler

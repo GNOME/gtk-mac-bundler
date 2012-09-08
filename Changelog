@@ -1,4 +1,10 @@
--e Changes in version 0.6.1:
+Changes in version 0.7.0:
+
+ - Filter list of binaries to exclude symlinks and files which are neither executable nor binary. (John Ralls)
+ - Add code signing to bundler. (John Ralls)
+ - If available, use CFBundleName instead of CFBundleExecutable for the bundle name. (Julien Woillez)
+
+Changes in version 0.6.1:
 
  - Bump version number for release bundler-0.6.1 (John Ralls)
  - Remove tarring the UI directory from make dist. (John Ralls)
