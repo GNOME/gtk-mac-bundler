@@ -297,6 +297,12 @@ class Bundler:
     # Lists all the binaries copied in so far. Used in the library
     # dependency resolution and icon theme lookup.
     def list_copied_binaries(self):
+        def filter_path(path):
+            if os.path.islink(path):
+                return False
+            if path.endswith(".so") or path.endswith(".dylib") or os.access(path, os.X_OK):
+                return True
+            return False
         paths = []
         for path in self.binary_paths:
             if os.path.isdir(path):
@@ -305,11 +311,8 @@ class Bundler:
             else:
                 paths.append(path)
 
-        # FIXME: Should filter this list so it only contains .so,
-        # .dylib, and executable binaries.
-        #return filter(lambda l: l.endswith(".so") or l.endswith(".dylib") or os.access(l, os.X_OK), paths)
-        paths = list(set(paths))
-        return paths
+        paths = filter(filter_path, paths)
+        return list(set(paths))
 
     def resolve_library_dependencies(self):
         # Get the libraries we link to, filter out anything that
