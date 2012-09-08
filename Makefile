@@ -17,7 +17,7 @@ dist:
 	if test -f Changelog; then \
 		mv Changelog Changelog.old; \
 	fi
-	echo -e "Changes in version ${VERSION}:\n" > Changelog
+	echo "Changes in version ${VERSION}:\n" > Changelog
 	git log --format=" - %s (%aN)" --no-merges bundler-${OLD_VERSION}...HEAD >> Changelog
 	echo "" >> Changelog
 	cat Changelog.old >> Changelog
