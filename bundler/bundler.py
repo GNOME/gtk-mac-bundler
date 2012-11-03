@@ -70,12 +70,14 @@ class Bundler:
     def create_pango_setup(self):
         # Create a temporary pangorc file just for creating the
         # modules file with the right modules.
+        module_version = utils.evaluate_pkgconfig_variables("${pkg:pango:pango_module_version}/")
         modulespath = self.project.get_bundle_path("Contents/Resources/lib/pango/" +
-                                                   "${pkg:pango:pango_module_version}/"+
+                                                   module_version +
                                                    "modules")
-        modulespath = utils.evaluate_pkgconfig_variables (modulespath)
 
+        from distutils.version import StrictVersion as V
         import tempfile
+
         fd, tmp_filename = tempfile.mkstemp()
         f = os.fdopen(fd, "w")
         f.write("[Pango]\n")
@@ -90,17 +92,27 @@ class Bundler:
         utils.makedirs(path)
         fout = open(os.path.join(path, "pango.modules"), "w")
 
-        prefix = self.project.get_bundle_path("Contents/Resources")
+        if V(module_version) < V('1.8.0'):
+            prefix_path  = os.path.join("Contents", "Resources")
+        else:
+            prefix_path = os.path.join("Contents", "Resources", "lib", "pango",
+                                       module_version, "modules/")
+
+        prefix = self.project.get_bundle_path(prefix_path)
 
         for line in f:
             line = line.strip()
-            if line.startswith("#"):
+            if line.startswith("# ModulesPath"):
                 continue
 
             # Replace the hardcoded bundle path with @executable_path...
             if line.startswith(prefix):
                 line = line[len(prefix):]
-                line = "@executable_path/../Resources" + line
+#Newer versions of pango have been modified to look in the right place
+#for modules (providing the PANGO_LIB_DIR is set to point to the
+#bundle_lib folder).
+                if V(module_version) < V('1.8.0'):
+                    line = "@executable_path/../Resources" + line
 
             fout.write(line)
             fout.write("\n")
@@ -113,7 +125,13 @@ class Bundler:
         utils.makedirs(path)
         f = open(os.path.join(path, "pangorc"), "w")
         f.write("[Pango]\n")
-        f.write("ModuleFiles=./pango.modules\n")
+#Pango 2.32 (corresponding to module_version 1.8.0) and later don't
+#interpret "./" to mean the same directory that the rc file is in, so
+#this doesn't work any more. However, pango does know to look in the
+#bundle directory (when given the right environment variable), so we
+#don't need this, either.
+        if V(module_version) < V('1.8.0'):
+            f.write("ModuleFiles=./pango.modules\n")
         f.close()
 
     def create_gtk_immodules_setup(self):
