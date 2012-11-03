@@ -1,3 +1,9 @@
+Changes in version 0.7.1:
+
+ - Try all prefixes (Andrea Curtoni)
+ - Fix paths in the Gtk3 sample (NiceDevs)
+ - Update for Pango-2.32.1 (John Ralls)
+
 Changes in version 0.7.0:
 
  - Filter list of binaries to exclude symlinks and files which are neither executable nor binary. (John Ralls)
