@@ -380,6 +380,8 @@ class Bundler:
                 return True
 
             lines = filter(prefix_filter, [line.strip() for line in f])
+            p = re.compile("(.*\.dylib\.?.*)\s\(compatibility.*$")
+            lines = utils.filterlines(p, lines)
             lines = map(relative_path_map, lines)
 #When you need to track down errors, uncomment this blocK
 #            for path in paths:
@@ -387,9 +389,6 @@ class Bundler:
 #                print path
 #                f = os.popen(cmd)
 #                lines = filter(prefix_filter, [line.strip() for line in f])
-
-            p = re.compile("(.*\.dylib\.?.*)\s\(compatibility.*$")
-            lines = utils.filterlines(p, lines)
 
             new_libraries = []
             for library in set(lines):
