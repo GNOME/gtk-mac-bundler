@@ -1,3 +1,11 @@
+NEW IN 0.7.3
+============
+- Another minor bugfix, in this case causing some binary dependencies to not be found.
+
+NEW IN 0.7.2
+============
+- Mnor bugfix fixed crash during pango module processing.
+
 NEW IN 0.7.1
 ============
 - Bundler will search all prefixes for binary dependencies (Andrea Curtoni)

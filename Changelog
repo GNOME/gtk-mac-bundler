@@ -1,2 +1,109 @@
+Changes in version 0.7.3:
+
+ - Strip the compatibility information from otool output before submitting it to relative_path_map(). (John Ralls)
+
 Changes in version 0.7.2:
 
+ - Fix small error in Pango handling (John Ralls)
+
+Changes in version 0.7.1:
+
+ - Try all prefixes (Andrea Curtoni)
+ - Fix paths in the Gtk3 sample (NiceDevs)
+ - Update for Pango-2.32.1 (John Ralls)
+
+Changes in version 0.7.0:
+
+ - Filter list of binaries to exclude symlinks and files which are neither executable nor binary. (John Ralls)
+ - Add code signing to bundler. (John Ralls)
+ - If available, use CFBundleName instead of CFBundleExecutable for the bundle name. (Julien Woillez)
+
+Changes in version 0.6.1:
+
+ - Bump version number for release bundler-0.6.1 (John Ralls)
+ - Remove tarring the UI directory from make dist. (John Ralls)
+ - Add .doap file for Gnome.org (John Ralls)
+ - Reflect change to Python2.7 it Gtk-OSX Stable moduleset. (John Ralls)
+ - Ensure that all the latest improvements to the launcher script are incorporated in all versions here. (John Ralls)
+ - Change gtk-mac-bundler to gtk-mac-bundler for transfer to gnome.org. (John Ralls)
+ - Delete old, unused, graphical interface (John Ralls)
+ - Launcher: expr isn't a bash builtin so it needs an absolute path. (John Ralls)
+ - Improve arguments handling in launcher. Thanks to prl <prl@ozemail.com.au> (John Ralls)
+ - Update demo bundle files and launcher script to reflect new location of gdk-pixbuf, and to load the print backends so that printing will work. (John Ralls)
+ - Fix pango.modules generation (Alexander Kojevnikov)
+
+Changes in version 0.6.0:
+
+ - Bump Version to 0.6.0 (John Ralls)
+ - Add Changelog-generation to make dist, and add Changelog for older distributions. (John Ralls)
+ - Rewrite of locale detection in the example launcher script. New version is more reliable and gives priority to the languages list rather than the locale setting in Formats. (John Ralls)
+ - Fix typo in pygtk-demo.bundle (John Ralls)
+ - Fix typos in gdk-pixbuf dirnames (John Ralls)
+ - Take destinations out of translation directives; with them in place, we had a single translation file in Contents/Resources instead of the tree of them in Contents/Resources/share/locales (John Ralls)
+ - Put python in Contents/MacOS so that the @executable_path rpaths will work correctly. (John Ralls)
+ - Add some protective code in translations function (John Ralls)
+ - Allow for building gtk+3 bundles (John Ralls)
+ - Work around the move of gdk-pixbuf out of gtk for recent (post 2.21.5/2.90.5) versions. (John Ralls)
+ - Replace shutil.copy with distutils.file_util.copy_file, which is a bit more robust. (John Ralls)
+ - add docs/ to gitignore, so that the product of make docs isn't added to the repo (and doesn't clutter up status) (John Ralls)
+ - If given a wild-card in a source path and if the recurse attribute is set to "True" for the element, copy_path will now walk the tree and create all subdirectories in destination to match those in source, and copy the files which match the wildcard. (John Ralls)
+ - Added new attribute, "recurse", to Path class. (John Ralls)
+ - Protect against adjusting already-adjusted paths (John Ralls)
+ - Fix typo in a comment (John Ralls)
+ - Remove restriction on a destination tag for binaries. (John Ralls)
+
+Changes in version 0.6.0:
+
+ - Add Changelog-generation to make dist, and add Changelog for older distributions. (John Ralls)
+ - Rewrite of locale detection in the example launcher script. New version is more reliable and gives priority to the languages list rather than the locale setting in Formats. (John Ralls)
+ - Fix typo in pygtk-demo.bundle (John Ralls)
+ - Fix typos in gdk-pixbuf dirnames (John Ralls)
+ - Take destinations out of translation directives; with them in place, we had a single translation file in Contents/Resources instead of the tree of them in Contents/Resources/share/locales (John Ralls)
+ - Put python in Contents/MacOS so that the @executable_path rpaths will work correctly. (John Ralls)
+ - Add some protective code in translations function (John Ralls)
+ - Allow for building gtk+3 bundles (John Ralls)
+ - Work around the move of gdk-pixbuf out of gtk for recent (post 2.21.5/2.90.5) versions. (John Ralls)
+ - Replace shutil.copy with distutils.file_util.copy_file, which is a bit more robust. (John Ralls)
+ - add docs/ to gitignore, so that the product of make docs isn't added to the repo (and doesn't clutter up status) (John Ralls)
+ - If given a wild-card in a source path and if the recurse attribute is set to "True" for the element, copy_path will now walk the tree and create all subdirectories in destination to match those in source, and copy the files which match the wildcard. (John Ralls)
+ - Added new attribute, "recurse", to Path class. (John Ralls)
+ - Protect against adjusting already-adjusted paths (John Ralls)
+ - Fix typo in a comment (John Ralls)
+ - Remove restriction on a destination tag for binaries. (John Ralls)
+
+Changes in O.5.4
+
+ - Bumped rev to 0.5.4 (John Ralls)
+ - Removed giggle.bundle; since there's no giggle any more, there's no point in keeping this around. (John Ralls)
+ - Add Guillaume Lessard's localization code to the example launcher. (John Ralls)
+ - Correct the version strings. (John Ralls)
+ - Restore inadvertently-deleted run-install-name-tool tag to bundle files. (John Ralls)
+ - Fix translation loop (John Ralls)
+ - More descriptive error message for unkown file copying errors (John Ralls)
+ - Add an example pygtk bundle (John Ralls)
+ - Write Package type into PkgInfo. (John Ralls)
+ - Provide a (normally commented out) block which reports each binary file processed so that one can find out which error messages go with which file. (John Ralls)
+ - Force the file copied by a <plist> element to be named Info.plist no matter what it's named originally. (Other plists can be copied using a <data> element.) Obviously, this means there will be only one. (John Ralls)
+
+Changes in O.5.3
+
+ - Bump the version to 0.5.3 (John Ralls)
+ - Add support to copy designated translation files (foo.po and foo.mo) (John Ralls)
+ - Revamped the locale-detection portion of launcher.sh to take into account all four locale-related variables published by Mac OS X (AppleCollationOrder, AppleLocale (including currency) and AppleLanguages). (Guillaume Lessard)
+ - Make sure that the list of paths from list_copied_binaries has no duplicates. (John Ralls)
+ - Process frameworks added to the bundle so that they will be used as private frameworks (otherwise, what's the point of adding them?) (John Ralls)
+ - Prevent recursive_rm from deleting the directory containing the new bundle. (John Ralls)
+ - add ability to run install_name_tool in both id and change mode and to take the interesting part of "RIGHT_PREFIX" from the command line. (John Ralls)
+ - Guard against a path having a link in it. (John Ralls)
+ - Use the same bin-dir that jhbuild does. (John Ralls)
+ - Unit tests for project.py (John Ralls)
+ - Copied in from macosxhints.com, this script will be used for implementing the <dmg> element. (John Ralls)
+ - Add gtk-demo bundle, info.plist, and launcher.sh to test a standard app (Giggle is some imendio thing, and should probably be dropped.) (John Ralls)
+ - Changed function-descriptive comment to docstring (John Ralls)
+
+Changes in O.5.2
+
+ - Bumped Version (John Ralls)
+ - Removed two ToDos that are already done (John Ralls)
+ - Added documentation for libfoo.la modification (John Ralls)
+ - Relocated Data Copy to after binary copies so that libtool files can be specified as data and not get nuked by the cleanup routine in copy binary files. Needed for libraries that are dlopened instead of linked during make. (John Ralls)
