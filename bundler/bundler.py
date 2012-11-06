@@ -70,10 +70,10 @@ class Bundler:
     def create_pango_setup(self):
         # Create a temporary pangorc file just for creating the
         # modules file with the right modules.
-        module_version = utils.evaluate_pkgconfig_variables("${pkg:pango:pango_module_version}/")
+        module_version = utils.evaluate_pkgconfig_variables("${pkg:pango:pango_module_version}")
         modulespath = self.project.get_bundle_path("Contents/Resources/lib/pango/" +
                                                    module_version +
-                                                   "modules")
+                                                   "modules/")
 
         from distutils.version import StrictVersion as V
         import tempfile

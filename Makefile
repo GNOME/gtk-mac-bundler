@@ -1,6 +1,6 @@
 PACKAGE = gtk-mac-bundler
-VERSION = 0.7.1
-OLD_VERSION = 0.7.0
+VERSION = 0.7.2
+OLD_VERSION = 0.7.1
 
 bindir=$(HOME)/.local/bin
 
