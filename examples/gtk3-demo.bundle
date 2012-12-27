@@ -33,7 +33,7 @@
          not needed. If the source path is left out, the default
          script will be used.
     -->
-    <launcher-script>${project}/launcher.sh</launcher-script >
+    <launcher-script>${project}/gtk3-launcher.sh</launcher-script >
 
     <!-- Not implemented: Optional runtime, could be python or mono
          for example.
@@ -52,23 +52,14 @@
 
   <main-binary>${prefix}/bin/gtk3-demo</main-binary>
 
-  <!-- Copy in GTK+ modules. Note the ${gtkdir} macro, which expands
-       to the correct library subdirectory for the specified gtk
-       version. 
-  -->
+  <!-- Copy in the input methods. Dunno if they actually work with
+       OSX. Note the ${gtkdir} macro, which expands to the correct
+       library subdirectory for the specified gtk version. -->
   <binary>
-     ${prefix}/lib/${gtkdir}/modules/*.so
+    ${prefix}/lib/${gtkdir}/${pkg:${gtk}:gtk_binary_version}/immodules/*.so
   </binary>
 
-  <!-- Copy in GTK+ theme engines and print backends. Note the use of the
-       "${pkg:module:variable}" macro, which evaluates to a pkg-config
-       variable in the specified module. Note that any libraries that
-       binaries link to are also copied in automatically.  Note also
-       the included ${gtk} macro, which gets the correct package name
-       to get. -->
-  <binary>
-    ${prefix}/lib/${gtkdir}/${pkg:${gtk}:gtk_binary_version}/theming-engines/*.so
-  </binary>
+<!-- And the print backends -->
   <binary>
     ${prefix}/lib/${gtkdir}/${pkg:${gtk}:gtk_binary_version}/printbackends/*.so
   </binary>
@@ -77,6 +68,14 @@
   <binary>
     ${prefix}/lib/gdk-pixbuf-2.0/${pkg:gdk-pixbuf-2.0:gdk_pixbuf_binary_version}/loaders/*.so
   </binary>
+
+  <binary>
+    ${prefix}/lib/pango/${pkg:pango:pango_module_version}/modules/
+  </binary>
+
+  <data>
+    ${prefix}/etc/pango/
+  </data>
 
   <!-- Translation filenames, one for each program or library that you
        want to copy in to the bundle. The "dest" attribute is
