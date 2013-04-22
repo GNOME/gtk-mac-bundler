@@ -96,7 +96,7 @@
 
 <!-- Starting with 2.24, gdk-pixbuf installs into its own directory. -->
   <binary>
-    ${prefix}/lib/gdk-pixbuf-2.0/${pkg:gdk-pixbuf-2.0:gdk_pixbuf_binary_version}/
+    ${prefix}/lib/gdk-pixbuf-2.0/${pkg:gdk-pixbuf-2.0:gdk_pixbuf_binary_version}/loaders/*.so
   </binary>
 
   <binary>
