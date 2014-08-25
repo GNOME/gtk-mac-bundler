@@ -544,6 +544,10 @@ class Bundler:
                     # Go through every file, if it matches the icon
                     # set, copy it.
                     (head, tail) = os.path.splitext(f)
+
+                    if head.endswith('.symbolic'):
+                        (head, tail) = os.path.splitext(head)
+
                     if head in used_icons or theme.icons == IconTheme.ICONS_ALL:
                         path = os.path.join(root, f)
 
