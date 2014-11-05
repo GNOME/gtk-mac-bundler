@@ -1,3 +1,18 @@
+Changes in version 0.7.4:
+
+ - Make sure to check for .symbolic icon extension (Jesse van den Kieboom)
+ - Fix pixbuf loader cache path (Jesse van den Kieboom)
+ - Make sure that libraries are writeable before using otool. (Julien Woillez)
+ - Update doap to reflect correct bug tracker. (John Ralls)
+ - Bug 698196: Fix typo (John Ralls)
+ - Bug #698916: Update versions, fix pixbuf (John Ralls)
+ - Update all launchers to reflect new pango environment variables (John Ralls)
+ - launcher: Update for pango changes (Dave Vasilevsky)
+ - Correct gdk-pixbuf path in the pygtk example (John Ralls)
+ - Bring example bundle files and launchers up to date (John Ralls)
+ - The *correct* fix for pango modules. (John Ralls)
+ - Fix another typo in pango module path (John Ralls)
+
 Changes in version 0.7.3:
 
  - Strip the compatibility information from otool output before submitting it to relative_path_map(). (John Ralls)

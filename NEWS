@@ -1,3 +1,12 @@
+NEW IN 0.7.4
+============
+    - Some bug fixes thanks to A Serranor.
+    - Bring the example files up to date and correct some errors
+    - Update launcher script to reflect new Pango layout.
+    - Make sure that the libraries are writeable before using otool (Julien Woillez)
+    - Fix the pixbuf loader cache path for new versions of gdk-pixbuf (Jesse van den Kieboom)
+    - Check for .symbolic icons (Jesse van den Kieboom)
+
 NEW IN 0.7.3
 ============
 - Another minor bugfix, in this case causing some binary dependencies to not be found.
