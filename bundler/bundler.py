@@ -1,12 +1,12 @@
 import sys
 import os, errno, glob
-import dircache, shutil
+import shutil
 import re
 from plistlib import Plist
 from distutils import dir_util, file_util
 
-from project import *
-import utils
+from .project import *
+from . import utils
 
 class Bundler:
     def __init__(self, project):
@@ -32,13 +32,13 @@ class Bundler:
     def recursive_rm(self, dirname):
         # Extra safety ;)
         if dirname in [ "/", os.getenv("HOME"), os.path.join(os.getenv("HOME"), "Desktop"), self.meta.dest ]:
-            print "Eek, trying to remove a bit much, eh? (%s)" % (dirname)
+            print("Eek, trying to remove a bit much, eh? (%s)" % (dirname))
             sys.exit(1)
 
         if not os.path.exists(dirname):
             return
         
-        files = dircache.listdir(dirname)
+        files = os.listdir(dirname)
         for file in files:
             path = os.path.join (dirname, file)
             if os.path.isdir(path):
@@ -227,7 +227,7 @@ class Bundler:
             # Clean out any libtool (*.la) files and static libraries
             if os.path.isdir(dest):
                 for root, dirs, files in os.walk(dest):
-                    for name in filter(lambda l: l.endswith(".la") or l.endswith(".a"), files):
+                    for name in [l for l in files if l.endswith(".la") or l.endswith(".a")]:
                         os.remove(os.path.join(root, name))
 
     # Copies from Path.source to Path.dest, evaluating any variables
@@ -247,7 +247,7 @@ class Bundler:
                 relative_dest = self.project.evaluate_path(Path.source[m.end():])
                 dest = self.project.get_bundle_path("Contents/Resources", relative_dest)
             else:
-                print "Invalid bundle file, missing or invalid 'dest' property: " + Path.dest
+                print("Invalid bundle file, missing or invalid 'dest' property: " + Path.dest)
                 sys.exit(1)
 
         (dest_parent, dest_tail) = os.path.split(dest)
@@ -257,7 +257,7 @@ class Bundler:
         p = re.compile("[\*\?]")
         (source_parent, source_tail) = os.path.split(source)
         if p.search(source_parent):
-            print "Can't have wildcards except in the last path component: " + source
+            print("Can't have wildcards except in the last path component: " + source)
             sys.exit(1)
 
         if p.search(source_tail):
@@ -267,7 +267,7 @@ class Bundler:
         else:
             source_check = source
         if not os.path.exists(source_check):
-            print "Cannot find source to copy: " + source
+            print("Cannot find source to copy: " + source)
             sys.exit(1)
 
         # If the destination has a wildcard as last component (copied
@@ -285,13 +285,13 @@ class Bundler:
                     try:
 #                        print "Copying %s to %s" % (globbed_source, destdir)
                         shutil.copy(globbed_source, destdir)
-                    except EnvironmentError, e:
+                    except EnvironmentError as e:
                         if e.errno == errno.ENOENT:
-                            print "Warning, source file missing: " + globbed_source
+                            print("Warning, source file missing: " + globbed_source)
                         elif e.errno == errno.EEXIST:
-                            print "Warning, path already exits: " + dest
+                            print("Warning, path already exits: " + dest)
                         else:
-                            print "Error %s when copying file: %s" % ( str(e), globbed_source )
+                            print("Error %s when copying file: %s" % ( str(e), globbed_source ))
                             sys.exit(1)
 
         else:
@@ -315,13 +315,13 @@ class Bundler:
                                             link=None,
                                             verbose=1,
                                             dry_run=0)
-                except EnvironmentError, e:
+                except EnvironmentError as e:
                     if e.errno == errno.ENOENT:
-                        print "Warning, source file missing: " + globbed_source
+                        print("Warning, source file missing: " + globbed_source)
                     elif e.errno == errno.EEXIST:
-                        print "Warning, path already exits: " + dest
+                        print("Warning, path already exits: " + dest)
                     else:
-                        print "Error %s when copying file: %s" %( str(e), globbed_source )
+                        print("Error %s when copying file: %s" %( str(e), globbed_source ))
                         sys.exit(1)
         return dest
 
@@ -338,11 +338,11 @@ class Bundler:
         for path in self.binary_paths:
             if os.path.isdir(path):
                 for root, dirs, files in os.walk(path):
-                    paths.extend(map(lambda l: os.path.join(root, l), files))
+                    paths.extend([os.path.join(root, l) for l in files])
             else:
                 paths.append(path)
 
-        paths = filter(filter_path, paths)
+        paths = list(filter(filter_path, paths))
         return list(set(paths))
 
     def resolve_library_dependencies(self):
@@ -366,11 +366,11 @@ class Bundler:
 
             def relative_path_map(line):
                 if not os.path.isabs(line):
-                    for prefix in prefixes.values():
+                    for prefix in list(prefixes.values()):
                         path = os.path.join(prefix, "lib", line)
                         if os.path.exists(path):
                             return path
-                    print "Cannot find a matching prefix for %s" % (line)
+                    print("Cannot find a matching prefix for %s" % (line))
                 return line
 
             def prefix_filter(line):
@@ -378,24 +378,24 @@ class Bundler:
                     return False
 
                 if line.startswith("/usr/X11"):
-                    print "Warning, found X11 library dependency, you most likely don't want that:", line.strip().split()[0]
+                    print("Warning, found X11 library dependency, you most likely don't want that:", line.strip().split()[0])
 
                 if os.path.isabs(line):
-                    for prefix in prefixes.values():
+                    for prefix in list(prefixes.values()):
                         if prefix in line:
                             return True
                     
                     if not line.startswith("/usr/lib") and not line.startswith("/System/Library"):
-                        print "Warning, library not available in any prefix:", line.strip().split()[0]
+                        print("Warning, library not available in any prefix:", line.strip().split()[0])
 
                     return False
 
                 return True
 
-            lines = filter(prefix_filter, [line.strip() for line in f])
+            lines = list(filter(prefix_filter, [line.strip() for line in f]))
             p = re.compile("(.*\.dylib\.?.*)\s\(compatibility.*$")
             lines = utils.filterlines(p, lines)
-            lines = map(relative_path_map, lines)
+            lines = list(map(relative_path_map, lines))
 #When you need to track down errors, uncomment this blocK
 #            for path in paths:
 #                cmd = "otool -L %s" % path
@@ -407,7 +407,7 @@ class Bundler:
             for library in set(lines):
                 # Replace the real path with the right prefix so we can
                 # create a Path object.
-                for (key, value) in prefixes.items():
+                for (key, value) in list(prefixes.items()):
                     if library.startswith(value):
                         path = Path("${prefix:" + key + "}" + library[len(value):])
                         new_libraries.append(path)
@@ -415,14 +415,14 @@ class Bundler:
             n_paths = len(paths)
             n_iterations += 1
             if n_iterations > 10:
-                print "Too many tries to resolve library dependencies"
+                print("Too many tries to resolve library dependencies")
                 sys.exit(1)
             
             self.copy_binaries(new_libraries)
             paths = self.list_copied_binaries()
 
     def run_install_name_tool(self):
-        print "Running install name tool"
+        print("Running install name tool")
 
         paths = self.list_copied_binaries()
         prefixes = self.meta.prefixes
@@ -430,12 +430,12 @@ class Bundler:
         # First change all references in libraries.
         for prefix in prefixes:
             prefix_path = self.project.get_prefix(prefix)
-            print "Going through prefix: " + prefix_path
+            print("Going through prefix: " + prefix_path)
             for path in paths:
                 cmd = os.path.join(os.path.dirname(__file__), "run-install-name-tool-change.sh") + " " + path + " " + prefix_path + " Resources" + " change"
                 f = os.popen(cmd)
                 for line in f:
-                    print line
+                    print(line)
 
         # Then change the id of all libraries. Skipping this part for now
         #for path in paths:
@@ -448,18 +448,18 @@ class Bundler:
         for framework in self.frameworks:
             fw_name, ext = os.path.splitext(os.path.basename(framework))
             fwl = os.path.join(framework, fw_name)
-            print "Importing Framework: " + fwl
+            print("Importing Framework: " + fwl)
 # Fix the framework IDs
             cmd = os.path.join(os.path.dirname(__file__), "run-install-name-tool-change.sh") + " " + fwl + " " + fw_name + " Frameworks" + " id"
             f = os.popen(cmd)
             for line in f:
-                print line
+                print(line)
 # Fix the dependencies in other libraries
             for path in paths:
                 cmd = os.path.join(os.path.dirname(__file__), "run-install-name-tool-change.sh") + " " + path + " " + fw_name + " Frameworks/" + fw_name + " change"
                 f = os.popen(cmd)
                 for line in f:
-                    print line
+                    print(line)
 #fix the dependencies in frameworks
             for ufw in self.frameworks:
                 ufw_name, ext = os.path.splitext(os.path.basename(ufw))
@@ -469,20 +469,20 @@ class Bundler:
                 cmd = os.path.join(os.path.dirname(__file__), "run-install-name-tool-change.sh") + " " + ufwl + " " + fw_name + " Frameworks/" + fw_name + " change"
                 f = os.popen(cmd)
                 for line in f:
-                    print line
+                    print(line)
 
 
     def strip_debugging(self):
         paths = self.list_copied_binaries()
         for path in paths:
             if path.endswith(".dylib") or path.endswith(".so"):
-                os.chmod(path, 0644)
+                os.chmod(path, 0o644)
                 os.system("strip -x " + path + " 2>/dev/null")
-                os.chmod(path, 0444)
+                os.chmod(path, 0o444)
             else:
-                os.chmod(path, 0755)
+                os.chmod(path, 0o755)
                 os.system("strip -ur " + path + " 2>/dev/null")
-                os.chmod(path, 0555)
+                os.chmod(path, 0o555)
 
 #
 # If you want to sign your application, set $APPLICATION_CERT with the
@@ -491,7 +491,7 @@ class Bundler:
 # bundle's id string.
 #
     def sign_binaries(self):
-        if not os.environ.has_key("APPLICATION_CERT"):
+        if "APPLICATION_CERT" not in os.environ:
             return
         cert = os.getenv("APPLICATION_CERT")
         paths = self.list_copied_binaries()
@@ -501,7 +501,7 @@ class Bundler:
             result = os.spawnvp(os.P_WAIT, 'codesign', cmdargs)
 
             if result:
-                raise OSError, '"' + " ".join(cmdargs) + '" failed %d' % result
+                raise OSError('"' + " ".join(cmdargs) + '" failed %d' % result)
 
     def copy_icon_themes(self):
         all_icons = set()
@@ -604,7 +604,7 @@ class Bundler:
         final_path = self.project.evaluate_path(final_path)
 
         if not self.meta.overwrite and os.path.exists(final_path):
-            print "Bundle already exists: " + final_path
+            print("Bundle already exists: " + final_path)
             sys.exit(1)
 
         self.create_skeleton()
@@ -618,7 +618,7 @@ class Bundler:
         path = self.project.get_main_binary()
         source = self.project.evaluate_path(path.source)
         if not os.path.exists(source):
-            print "Cannot find main binary: " + source
+            print("Cannot find main binary: " + source)
             sys.exit(1)
 
         dest = self.copy_path(path)
@@ -658,24 +658,24 @@ class Bundler:
         launcher_script = self.project.get_launcher_script()
         if launcher_script:
             path = self.copy_path(launcher_script)
-            if os.environ.has_key("APPLICATION_CERT"):
+            if "APPLICATION_CERT" in os.environ:
                 cert = os.environ["APPLICATION_CERT"]
                 ident = self.project.get_bundle_id()
                 cmdargs = ['codesign', '-s', cert, '-i', ident, "-f", path]
                 result = os.spawnvp(os.P_WAIT, 'codesign', cmdargs)
                 if result:
-                    raise OSError, '"'+ " ".join(cmdargs) + '" failed %d' % result
+                    raise OSError('"'+ " ".join(cmdargs) + '" failed %d' % result)
         if self.meta.overwrite:
             self.recursive_rm(final_path)
         shutil.move(self.project.get_bundle_path(), final_path)
 
 if __name__ == '__main__':
     if len(sys.argv) != 2:
-        print "Usage: %s <bundle descriptopn file>" % (sys.argv[0])
+        print("Usage: %s <bundle descriptopn file>" % (sys.argv[0]))
         sys.exit(2)
 
     if not os.path.exists(sys.argv[1]):
-        print "File %s does not exist" % (sys.argv[1])
+        print("File %s does not exist" % (sys.argv[1]))
         sys.exit(2)
 
     project = Project(sys.argv[1])

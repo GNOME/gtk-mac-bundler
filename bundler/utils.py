@@ -33,7 +33,7 @@ def evaluate_pkgconfig_variables(string):
 def makedirs(path):
     try:
         os.makedirs(path)
-    except EnvironmentError, e:
+    except EnvironmentError as e:
         if e.errno != errno.EEXIST:
             raise
 

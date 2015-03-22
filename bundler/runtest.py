@@ -1,7 +1,7 @@
 #!/usr/bin/python
 import unittest
 import os
-from project_test import Project_Test
+from .project_test import Project_Test
 
 def setProjects( goodpath, badpath):
     if not os.path.isabs(goodpath):

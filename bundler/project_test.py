@@ -5,8 +5,8 @@ import unittest
 import xml.dom.minidom
 from xml.dom.minidom import Node
 from plistlib import Plist
-from project import Project
-import utils
+from .project import Project
+from . import utils
 
 class Mock_Project(Project):
 
@@ -20,9 +20,9 @@ class Mock_Project(Project):
         try:
             plist_path = os.path.join(self.project_dir, "test.plist")
             plist = Plist.fromFile(plist_path)
-        except EnvironmentError, e:
+        except EnvironmentError as e:
             if e.errno == errno.ENOENT:
-                print "Info.plist file not found: " + plist_path
+                print("Info.plist file not found: " + plist_path)
                 sys.exit(1)
             else:
                 raise

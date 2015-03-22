@@ -5,7 +5,7 @@ import os
 import xml.dom.minidom
 from xml.dom.minidom import Node
 from plistlib import Plist
-import utils
+from . import utils
 
 # Base class for anything that can be copied into a bundle with a
 # source and dest.
@@ -184,7 +184,7 @@ class Data(Path):
     pass
 
 class IconTheme:
-    ICONS_NONE, ICONS_ALL, ICONS_AUTO = range(3)
+    ICONS_NONE, ICONS_ALL, ICONS_AUTO = list(range(3))
     
     def __init__(self, name, icons=ICONS_AUTO):
         self.name = name
@@ -221,7 +221,7 @@ class Project:
                 # Get the first app-bundle tag and ignore any others.
                 self.root = utils.node_get_element_by_tag_name(doc, "app-bundle")
             except:
-                print "Could not load project %s:" % (project_path)
+                print("Could not load project %s:" % (project_path))
                 raise
 
         # The directory the project file is in (as opposed to
@@ -232,14 +232,14 @@ class Project:
         plist_path = self.get_plist_path()
         try:
             plist = Plist.fromFile(plist_path)
-        except EnvironmentError, e:
+        except EnvironmentError as e:
             if e.errno == errno.ENOENT:
-                print "Info.plist file not found: " + plist_path
+                print("Info.plist file not found: " + plist_path)
                 sys.exit(1)
             else:
                 raise
         self.name = plist.CFBundleExecutable
-        if plist.has_key("CFBundleName"):
+        if "CFBundleName" in plist:
             self.bundle_name = plist.CFBundleName
         else:
             self.bundle_name = plist.CFBundleExecutable
@@ -340,7 +340,7 @@ class Project:
             themes.append(IconTheme.from_node(node))
 
         # The hicolor theme is mandatory.
-        if not filter(lambda l: l.name == "hicolor", themes):
+        if not [l for l in themes if l.name == "hicolor"]:
             themes.append(IconTheme("hicolor"))
 
         return themes
@@ -412,33 +412,33 @@ class Project:
 if __name__ == '__main__':
     project = Project(os.path.join(os.getcwd(), 'giggle.bundle'))
 
-    print "General:"
-    print "  Project path: %s" % (project.get_project_path())
-    print "  Plist path: %s" % (project.get_plist_path())
-    print "  App name: %s" % (project.name)
-    print "  Destination: %s" % (project.get_meta().dest)
-    print "  Overwrite: %s" % (str(project.get_meta().overwrite))
+    print("General:")
+    print("  Project path: %s" % (project.get_project_path()))
+    print("  Plist path: %s" % (project.get_plist_path()))
+    print("  App name: %s" % (project.name))
+    print("  Destination: %s" % (project.get_meta().dest))
+    print("  Overwrite: %s" % (str(project.get_meta().overwrite)))
 
     environment = project.get_environment()
-    print "Environment:"
+    print("Environment:")
     for variable in environment.runtime_variables:
-        print "  %s=%s" % (variable.name, variable.value)
+        print("  %s=%s" % (variable.name, variable.value))
     for script in environment.scripts:
-        print "  %s => %s" % (script.source, script.dest)
+        print("  %s => %s" % (script.source, script.dest))
 
-    print "Frameworks:"
+    print("Frameworks:")
     for framework in project.get_frameworks():
-        print " ", framework
+        print(" ", framework)
 
-    print "Main binary:"
+    print("Main binary:")
     binary = project.get_main_binary()
-    print "  %s => %s" % (binary.source, binary.dest)
+    print("  %s => %s" % (binary.source, binary.dest))
 
-    print "Launcher:"
+    print("Launcher:")
     launcher_script = project.get_launcher_script()
-    print "  %s => %s" % (launcher_script.source, launcher_script.dest)
+    print("  %s => %s" % (launcher_script.source, launcher_script.dest))
 
-    print "Binaries:"
+    print("Binaries:")
     for binary in project.get_binaries():
-        print "  %s => %s" % (binary.source, binary.dest)
+        print("  %s => %s" % (binary.source, binary.dest))
 
