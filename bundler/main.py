@@ -14,5 +14,7 @@ def main(argv):
 
     project = Project(argv[0])
     bundler = Bundler(project)
-
-    bundler.run()
+    try:
+        bundler.run()
+    except Exception as err:
+        print("Bundler encountered an error %s" % str(err))
