@@ -223,6 +223,8 @@ class Bundler:
 
     def copy_binaries(self, binaries):
         for path in binaries:
+            if os.path.islink(path.source):
+                continue
             dest = self.copy_path(path)
 
             self.binary_paths.append(dest)
