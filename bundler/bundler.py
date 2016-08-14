@@ -504,6 +504,7 @@ class Bundler:
         cert = os.getenv("APPLICATION_CERT")
         paths = self.list_copied_binaries()
         ident = self.project.get_bundle_id()
+        paths.sort(reverse=True)
         for path in paths:
             cmdargs = ['codesign', '-s', cert, '-i', ident, path]
             result = os.spawnvp(os.P_WAIT, 'codesign', cmdargs)
