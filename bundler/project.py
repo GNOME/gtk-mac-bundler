@@ -324,13 +324,16 @@ class Project:
         node = utils.node_get_element_by_tag_name(self.root, "launcher-script")
         if node:
             path = Path.from_node(node, False)
-            path.dest = "${bundle}/Contents/MacOS/${name}"
-        else:
-            # Use the default launcher.
-            launcher = os.path.join(os.path.dirname(__file__), "launcher.sh")
-            path = Path(launcher, "${bundle}/Contents/MacOS/${name}")
+            if not path.source:
+                # Use the default launcher.
+                launcher = os.path.join(os.path.dirname(__file__),
+                                        "launcher.sh")
+                path = Path(launcher, "${bundle}/Contents/MacOS/${name}")
+            else:
+                path.dest = "${bundle}/Contents/MacOS/${name}"
+            return path
 
-        return path
+        return None
 
     def get_icon_themes(self):
         themes = []

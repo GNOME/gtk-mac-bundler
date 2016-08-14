@@ -78,6 +78,8 @@ def node_get_element_by_tag_name(node, name):
 
 def node_get_string(node, default=None):
     try:
+        if node.firstChild == None:
+            return None
         return node.firstChild.data.strip()
     except:
         return default
