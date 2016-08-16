@@ -26,5 +26,8 @@
     <string>Copyright 1997 - 2013 The GTK+ Team, GNU General Public License.</string>
     <key>LSMinimumSystemVersion</key>
     <string>10.4</string>
+    <key>GtkOSXLaunchScriptFile</key>
+    <string>gtk_launcher.py</string>
+
 </dict>
 </plist>

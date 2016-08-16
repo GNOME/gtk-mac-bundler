@@ -20,10 +20,6 @@
     -->
     <destination overwrite="yes">${env:HOME}/Desktop</destination>
 
-    <image>
-      <!-- Not implemented yet (DMG image). -->
-    </image>
-
     <!-- Comment this out to keep the install names in binaries -->
     <run-install-name-tool/>
  
@@ -31,14 +27,13 @@
          application sets up everything needed itself, like
          environment variable, linker paths, etc, a launcher script is
          not needed. If the source path is left out, the default
-         script will be used.
-    -->
-    <launcher-script>${project}/launcher.sh</launcher-script >
+	 script will be used.
 
-    <!-- Not implemented: Optional runtime, could be python or mono
-         for example.
+         This example uses python-launcher.c (see the comment at
+         main-binary below), so there's no launcher script.
     -->
-    <!-- runtime copy="yes">/usr/bin/python</runtime -->
+    <!--launcher-script>${project}/launcher.sh</launcher-script -->
+
     <!-- Indicate the active gtk version to use. This is needed only
          for gtk+-3.0 projects. -->
     <gtk>gtk+-2.0</gtk>
@@ -49,8 +44,16 @@
        identifier are taken from the plist file.
   -->
   <plist>${project}/Info-gtk-demo.plist</plist>
+  <!-- Build gtk-demo-launcher with:
+          gcc -L$PREFIX `python-config --cflags --ldflags` \
+              -o $PREFIX/bin/gramps-launcher \
+	      path/to/gtk-mac-bundler/examples/python-launcher.c
+       with the obvious substitution.
+  -->
 
-  <main-binary>${prefix}/bin/gtk-demo</main-binary>
+  <main-binary>
+    ${prefix}/bin/gtk-demo-launcher
+  </main-binary>
 
   <!-- Copy in GTK+ modules.  Note the ${gtkdir} macro, which expands
        to the correct library subdirectory for the specified gtk

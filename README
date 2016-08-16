@@ -241,6 +241,62 @@ just put it in a data element and gtk-mac-integration (version 0.5.2
 and later) will copy it in *after* doing the *.l?a cleanup: <data>
 ${prefix}/lib/libfoo*.la </data>
 
+Code Signing
+------------
+
+Until mid-2016 gtk-mac-bundler depended upon a launcher shell script
+to configure the environment. You can still do this, but it causes
+problems with code-signing. Apple recommends that one not install
+scripts into the Contents/MacOS folder of a bundle, nor should one
+attempt to sign scripts. Doing so will produce signatures that are
+incompatible across different versions of MacOS.
+
+That means that for compiled-executable programs you need to launch
+first and then configure the environment before starting gettext,
+Gtk+, and any other libraries that read the environment for their
+configuration. There are a variety of ways to do this, including
+adding a module which reads configuration data from MacOS's 'defaults'
+preferences system or reading a YAML (a.k.a 'ini') file and exporting
+the results to the environment with setenv().
+
+For script-based programs one must create a small executable program
+which prepares the interpreter, launches it, and points it at a
+startup script which configutres the environment. Such a program,
+written in C, is provided in examples/python-launcher.c; a companion
+startup script, gtk_launcher.py, does the environment
+configuration. python-launcher.c should work as-is for most python
+programs; gtk_launcher.py will require a bit of specializing to work,
+in particular the import statement and startup call at the end of
+the file.
+
+To build python-launcher.c, start a jhbuild shell for your target and run:
+  gcc -L$PREFIX `python-config --cflags --ldflags` -o $PREFIX/bin/your-launcher \
+     path/to/gtk-mac-bundler/examples/python-launcher.c
+
+Remove the <launcher-script> element from your bundle file and change
+the main-binary element to:
+   <main-binary>
+       ${prefix}/bin/your-launcher
+   </main-binary>
+In this case leaving the name as "your-launcher" will actually work:
+The bundler will rename the file to the value of the
+CFBundleExecutable key in Info.plist.
+
+Copy gtk_launcher.py to the folder where your bundle file is, rename
+it to your liking (your_launcher.py from no on), and edit it as
+necessary.
+
+Add a data element for your_launcher.py to your bundle file:
+  <data dest=${bundle}/Contents/Resources>
+    ${project}/your_launcher.py
+  </data>
+
+Add the following key to the top dict in Info.plist for your project:
+    <key>GtkOSXLaunchScriptFile</key>
+    <string>your_launcher.py</string>
+
+
+
 Icon themes
 -----------
 
