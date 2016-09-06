@@ -135,8 +135,15 @@ main(int argc, char *argv[])
     set_python_path();
     Py_Initialize();
     wargv[0] = get_bundle_dir();
-    for (i = 1; i < argc; ++i)
+    for (i = 1; i < argc; ++i) {
+	if (strncmp(argv[i], "-psn", 4) == 0) {
+	    int j;
+	    for (j = i; j < argc; ++j)
+		argv[j] = argv[j+1];
+	    --argc;
+	}
 	wargv[i] = widen_c_string(argv[i]);
+    }
     PySys_SetArgvEx(argc, wargv, 0);
     retval = PyRun_SimpleFile(fd, "");
     if (retval != 0)
