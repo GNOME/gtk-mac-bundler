@@ -30,7 +30,7 @@ Prerequisites
 You need to have a GTK+ installation as done for example by using
 jhbuild as described on the GTK+ OS X project site:
 
-	http://live.gnome.org/GTK%2B/OSX/Building
+	http://wiki.gnome.org/Projects/GTK%2B/OSX/Building
 
 The gtk-mac-bundler command needs to be run inside an environment
 setup for running the GTK+, for example inside a jhbuild shell.
@@ -270,7 +270,7 @@ in particular the import statement and startup call at the end of
 the file.
 
 To build python-launcher.c, start a jhbuild shell for your target and run:
-  gcc -L$PREFIX `python-config --cflags --ldflags` -o $PREFIX/bin/your-launcher \
+  gcc -L$PREFIX/lib `python-config --cflags --ldflags` -o $PREFIX/bin/your-launcher \
      path/to/gtk-mac-bundler/examples/python-launcher.c
 
 Remove the <launcher-script> element from your bundle file and change
@@ -283,7 +283,7 @@ The bundler will rename the file to the value of the
 CFBundleExecutable key in Info.plist.
 
 Copy gtk_launcher.py to the folder where your bundle file is, rename
-it to your liking (your_launcher.py from no on), and edit it as
+it to your liking (your_launcher.py from now on), and edit it as
 necessary.
 
 Add a data element for your_launcher.py to your bundle file:
