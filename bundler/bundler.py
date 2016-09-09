@@ -523,7 +523,7 @@ class Bundler:
         for theme in themes:
             if theme.icons == IconTheme.ICONS_NONE:
                 continue
-            
+
             for root, dirs, files in os.walk(self.project.evaluate_path(theme.source)):
                 for f in files:
                     (head, tail) = os.path.splitext(f)
@@ -600,9 +600,44 @@ class Bundler:
             for root, trees, files in os.walk(source):
                 for file in filter(name_filter, files):
                     path = os.path.join(root, file)
-                    self.copy_path(Path("${prefix}" + path[len(prefix):], 
+                    self.copy_path(Path("${prefix}" + path[len(prefix):],
                                         program.dest))
 
+
+    def install_gir(self):
+        gir_files = self.project.get_gir()
+        bundle_gir_dir = self.project.get_bundle_path('Contents', 'Resources',
+                                                      'share', 'gir-1.0')
+        bundle_typelib_dir = self.project.get_bundle_path('Contents', 'Resources',
+                                                          'lib', 'girepository-1.0')
+        old_lib_path = os.path.join(self.project.get_prefix(), 'lib')
+        os.makedirs(bundle_gir_dir)
+        os.makedirs(bundle_typelib_dir)
+        import subprocess
+
+        def transform_file(filename):
+            path, fname = os.path.split(filename)
+            name, ext = os.path.splitext(fname)
+
+            with open (filename, "r") as source:
+                lines = source.readlines()
+            newpath = os.path.join(bundle_gir_dir, fname)
+            typelib = os.path.join(bundle_typelib_dir, name + '.typelib')
+            with open (newpath, "w") as target:
+                for line in lines:
+                    target.write(re.sub(old_lib_path,
+                                        '@executable_path/../Resources/lib',
+                                        line))
+            subprocess.call(['g-ir-compiler', '--output=' + typelib, newpath])
+            self.binary_paths.append(typelib)
+
+        for gir in gir_files:
+            filename = self.project.evaluate_path(gir.source)
+            for globbed_source in glob.glob(filename):
+                try:
+                    transform_file(globbed_source)
+                except Exception as err:
+                    print('Error in transformation of %s: %s' % (globbed_source, err))
 
     def run(self):
         # Remove the temp location forcefully.
@@ -636,6 +671,9 @@ class Bundler:
         # Additional binaries (executables, libraries, modules)
         self.copy_binaries(self.project.get_binaries())
         self.resolve_library_dependencies()
+
+        # Gir and Typelibs
+        self.install_gir()
 
         # Data
         for path in self.project.get_data():

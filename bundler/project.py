@@ -178,7 +178,14 @@ class Translation(Path):
     from_node = classmethod(from_node)
 
 
-        
+class GirFile(Path):
+    def __init__(self, sourcepath, destpath):
+        Path.__init__(self, sourcepath, destpath)
+
+    def from_node(cls, node):
+        gir = Path.from_node(node)
+        return GirFile(gir.source, gir.dest)
+    from_node = classmethod(from_node)
 
 class Data(Path):
     pass
@@ -381,6 +388,13 @@ class Project:
         for node in nodes:
             translations.append(Translation.from_node(node))
         return translations
+
+    def get_gir(self):
+        gir_files = []
+        nodes = utils.node_get_elements_by_tag_name(self.root, "gir")
+        for node in nodes:
+            gir_files.append(GirFile.from_node(node))
+        return gir_files
 
     def get_main_binary(self):
         node = utils.node_get_element_by_tag_name(self.root, "main-binary")

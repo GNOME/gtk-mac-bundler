@@ -88,6 +88,22 @@
   </binary>
 -->
 
+<!-- GObject-introspection based projects require typelibs for
+     connecting the C-based shared libraries with their language
+     bindings. These are compiled from GObject-Introspection (.gir)
+     files, in turn made by g-ir-scanner. g-ir-scanner embeds the
+     install_name from the library in the gir file, normally an
+     absolute path at build time. We need to change it to the
+     install_name for the bundle, beginning with @executable_path. We
+     do that by importing and modifying the gir files then recompiling
+     them. It's possible to specify only the gir files you need but in
+     most serious programs that works out to a rather long list so
+     it's better to just use a wildcard.
+     <gir>
+       ${prefix}/share/gir-1.0/*.gir
+     </gir>
+     -->
+
   <data>
     ${prefix}/etc/pango/
   </data>
