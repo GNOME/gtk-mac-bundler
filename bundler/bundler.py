@@ -406,13 +406,6 @@ class Bundler:
             p = re.compile("(.*\.dylib\.?.*)\s\(compatibility.*$")
             lines = utils.filterlines(p, lines)
             lines = list(map(relative_path_map, lines))
-#When you need to track down errors, uncomment this blocK
-#            for path in paths:
-#                cmd = "otool -L %s" % path
-#                print path
-#                f = os.popen(cmd)
-#                lines = filter(prefix_filter, [line.strip() for line in f])
-
             new_libraries = []
             for library in set(lines):
                 # Replace the real path with the right prefix so we can
@@ -427,7 +420,7 @@ class Bundler:
             if n_iterations > 10:
                 print("Too many tries to resolve library dependencies")
                 sys.exit(1)
-            
+
             self.copy_binaries(new_libraries)
             paths = self.list_copied_binaries()
 
