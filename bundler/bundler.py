@@ -362,6 +362,37 @@ class Bundler:
         n_iterations = 0
         n_paths = 0
         paths = self.list_copied_binaries()
+
+        def relative_path_map(line):
+            if not os.path.isabs(line):
+                for prefix in list(prefixes.values()):
+                    path = os.path.join(prefix, "lib", line)
+                    if os.path.exists(path):
+                        return path
+                print("Cannot find a matching prefix for %s" % (line))
+            return line
+
+        def prefix_filter(line):
+            if not "(compatibility" in line:
+                print "Removed %s" % line
+                return False
+
+            if line.startswith("/usr/X11"):
+                print("Warning, found X11 library dependency, you most likely don't want that:", line.strip().split()[0])
+
+            if os.path.isabs(line):
+                for prefix in list(prefixes.values()):
+                    if prefix in line:
+                        return True
+
+                if not line.startswith("/usr/lib") and not line.startswith("/System/Library"):
+                    print("Warning, library not available in any prefix:",
+                          line.strip().split()[0])
+
+                return False
+
+            return True
+
         while n_paths != len(paths):
             cmds = [ "otool -L " ]
             for path in paths:
@@ -371,35 +402,6 @@ class Bundler:
             f = os.popen(cmd)
 
             prefixes = self.meta.prefixes
-
-            def relative_path_map(line):
-                if not os.path.isabs(line):
-                    for prefix in list(prefixes.values()):
-                        path = os.path.join(prefix, "lib", line)
-                        if os.path.exists(path):
-                            return path
-                    print("Cannot find a matching prefix for %s" % (line))
-                return line
-
-            def prefix_filter(line):
-                if not "(compatibility" in line:
-                    return False
-
-                if line.startswith("/usr/X11"):
-                    print("Warning, found X11 library dependency, you most likely don't want that:", line.strip().split()[0])
-
-                if os.path.isabs(line):
-                    for prefix in list(prefixes.values()):
-                        if prefix in line:
-                            return True
-                    
-                    if not line.startswith("/usr/lib") and not line.startswith("/System/Library"):
-                        print("Warning, library not available in any prefix:", line.strip().split()[0])
-
-                    return False
-
-                return True
-
             lines = list(filter(prefix_filter, [line.strip() for line in f]))
             p = re.compile("(.*\.dylib\.?.*)\s\(compatibility.*$")
             lines = utils.filterlines(p, lines)
