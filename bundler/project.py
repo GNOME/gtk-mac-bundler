@@ -25,6 +25,7 @@ class Path:
         self.dest = dest
         self.recurse = recurse
 
+    @classmethod
     def from_node(cls, node, validate=True):
         source = utils.node_get_string(node)
         dest = node.getAttribute("dest")
@@ -39,8 +40,8 @@ class Path:
             Path.validate(source, dest)
 
         return Path(source, dest, recurse)
-    from_node = classmethod(from_node)
 
+    @classmethod
     def validate(cls, source, dest):
         if source and len(source) == 0:
             source = None
@@ -77,7 +78,6 @@ class Path:
             raise Exception("The destination path must start with ${bundle}")
 
         return True
-    validate = classmethod(validate)
 
 # Used for anything that has a name and value.
 class Variable:
@@ -135,22 +135,23 @@ class Framework(Path):
     def __init__(self, source):
         Path.__init__(self, source, self.get_dest_path_from_source(source))
 
+    @classmethod
     def from_node(cls, node):
         framework = Path.from_node(node, validate=False)
         framework.dest = Framework.get_dest_path_from_source(framework.source)
 
         return framework
-    from_node = classmethod(from_node)
 
+    @classmethod
     def get_dest_path_from_source(cls, source):
         (head, tail) = os.path.split(source)
         return "${bundle}/Contents/Frameworks/" + tail
-    get_dest_path_from_source = classmethod(get_dest_path_from_source)
 
 class Binary(Path):
     def __init__(self, source, dest):
         Path.__init__(self, source, dest)
 
+    @classmethod
     def from_node(cls, node):
         binary = Path.from_node(node)
 
@@ -158,13 +159,13 @@ class Binary(Path):
             raise "The tag 'binary' must have a 'source' property"
 
         return binary
-    from_node = classmethod(from_node)
 
 class Translation(Path):
     def __init__(self, name, sourcepath, destpath):
         Path.__init__(self, sourcepath, destpath)
         self.name = name
 
+    @classmethod
     def from_node(cls, node):
         source = utils.node_get_string(node)
         dest = node.getAttribute("dest")
@@ -175,17 +176,16 @@ class Translation(Path):
             raise "The tag 'translations' must have a 'name' property"
 
         return Translation(name, source, dest)
-    from_node = classmethod(from_node)
 
 
 class GirFile(Path):
     def __init__(self, sourcepath, destpath):
         Path.__init__(self, sourcepath, destpath)
 
+    @classmethod
     def from_node(cls, node):
         gir = Path.from_node(node)
         return GirFile(gir.source, gir.dest)
-    from_node = classmethod(from_node)
 
 class Data(Path):
     pass
@@ -199,6 +199,7 @@ class IconTheme:
 
         self.icons = icons
 
+    @classmethod
     def from_node(cls, node):
         name = utils.node_get_string(node)
         if not name:
@@ -213,7 +214,6 @@ class IconTheme:
             icons = IconTheme.ICONS_AUTO
 
         return IconTheme(name, icons)
-    from_node = classmethod(from_node)
 
 class Project:
     def __init__(self, project_path=None):
