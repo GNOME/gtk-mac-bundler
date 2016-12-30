@@ -37,7 +37,7 @@ class Bundler:
 
         if not os.path.exists(dirname):
             return
-        
+
         files = os.listdir(dirname)
         for file in files:
             path = os.path.join (dirname, file)
@@ -145,7 +145,7 @@ class Bundler:
         cmd = "GTK_EXE_PREFIX=" + path + " gtk-query-immodules-" + self.project.get_gtk_version()
         f = os.popen(cmd)
 
-        path = self.project.get_bundle_path("Contents/Resources/etc/", 
+        path = self.project.get_bundle_path("Contents/Resources/etc/",
                                             self.project.get_gtk_dir())
         utils.makedirs(path)
         fout = open(os.path.join(path, "gtk.immodules"), "w")
@@ -168,21 +168,21 @@ class Bundler:
     def create_gdk_pixbuf_loaders_setup(self):
         modulespath = ""
         cachepath = ""
-        if os.path.exists(os.path.join(self.project.get_prefix(), "lib", 
+        if os.path.exists(os.path.join(self.project.get_prefix(), "lib",
                                        "gdk-pixbuf-2.0")):
 
             modulespath = self.project.get_bundle_path("Contents/Resources/lib/",
-                                                     "gdk-pixbuf-2.0", 
+                                                     "gdk-pixbuf-2.0",
                                                      "${pkg:gdk-pixbuf-2.0:gdk_pixbuf_binary_version}",
                                                      "loaders")
             cachepath = self.project.get_bundle_path("Contents/Resources/lib/",
                                                      "gdk-pixbuf-2.0",
                                                      "${pkg:gdk-pixbuf-2.0:gdk_pixbuf_binary_version}",
                                                      "loaders.cache")
-        elif os.path.exists(os.path.join(self.project.get_prefix(), "lib", 
+        elif os.path.exists(os.path.join(self.project.get_prefix(), "lib",
                                        "gdk-pixbuf-3.0")):
             modulespath = self.project.get_bundle_path("Contents/Resources/lib/",
-                                                     "gdk-pixbuf-3.0", 
+                                                     "gdk-pixbuf-3.0",
                                                      "${pkg:gdk-pixbuf-3.0:gdk_pixbuf_binary_version}",
                                                      "loaders")
             cachepath = self.project.get_bundle_path("Contents/Resources/lib/",
@@ -673,7 +673,7 @@ class Bundler:
         # Data
         for path in self.project.get_data():
             self.copy_path(path)
-        
+
         # Translations
         self.copy_translations()
 

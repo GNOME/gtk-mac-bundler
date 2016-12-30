@@ -20,7 +20,7 @@ class Path:
             source = os.path.normpath(source)
         if dest and os.path.isabs(dest):
             dest = os.path.normpath(dest)
-            
+
         self.source = source
         self.dest = dest
         self.recurse = recurse
@@ -37,7 +37,7 @@ class Path:
             recurse = False
         if validate:
             Path.validate(source, dest)
-            
+
         return Path(source, dest, recurse)
     from_node = classmethod(from_node)
 
@@ -49,7 +49,7 @@ class Path:
 
         if not source or len(source) == 0:
             raise Exception("The source path cannot be empty")
-        
+
         if source.startswith("${bundle}"):
             raise Exception("The source path cannot use a ${bundle} macro")
 
@@ -114,7 +114,7 @@ class Meta:
         child = utils.node_get_element_by_tag_name(node, "image")
         if child:
             pass # FIXME: implement
-        
+
         child = utils.node_get_element_by_tag_name(node, "run-install-name-tool")
         if child:
             self.run_install_name_tool = True
@@ -192,7 +192,7 @@ class Data(Path):
 
 class IconTheme:
     ICONS_NONE, ICONS_ALL, ICONS_AUTO = list(range(3))
-    
+
     def __init__(self, name, icons=ICONS_AUTO):
         self.name = name
         self.source = "${prefix}/share/icons/" + name
@@ -203,7 +203,7 @@ class IconTheme:
         name = utils.node_get_string(node)
         if not name:
             raise Exception("Icon theme must have a 'name' property")
-        
+
         string = node.getAttribute("icons")
         if string == "all":
             icons = IconTheme.ICONS_ALL
@@ -211,7 +211,7 @@ class IconTheme:
             icons = IconTheme.ICONS_NONE
         elif string == "auto" or len(string) == 0:
             icons = IconTheme.ICONS_AUTO
-            
+
         return IconTheme(name, icons)
     from_node = classmethod(from_node)
 
@@ -425,7 +425,7 @@ class Project:
         for node in nodes:
             data.append(Data.from_node(node))
         return data
-            
+
 if __name__ == '__main__':
     project = Project(os.path.join(os.getcwd(), 'giggle.bundle'))
 
@@ -458,4 +458,3 @@ if __name__ == '__main__':
     print("Binaries:")
     for binary in project.get_binaries():
         print("  %s => %s" % (binary.source, binary.dest))
-

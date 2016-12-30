@@ -72,7 +72,7 @@ def node_get_elements_by_tag_name(node, name):
 def node_get_element_by_tag_name(node, name):
     try:
         (data,) = node.getElementsByTagName(name)
-        return data 
+        return data
     except:
         return None
 
