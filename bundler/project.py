@@ -9,7 +9,7 @@ from . import utils
 
 # Base class for anything that can be copied into a bundle with a
 # source and dest.
-class Path:
+class Path(object):
     def __init__(self, source, dest=None, recurse=False):
         if source and len(source) == 0:
             source = None
@@ -38,6 +38,18 @@ class Path:
             recurse = False
         if validate:
             Path.validate(source, dest)
+
+        if node.tagName == "framework":
+            return Framework(source, recurse)
+        if node.tagName == "binary" or node.tagName == "main-binary":
+            return Binary(source, dest, recurse)
+        if node.tagName == "translations":
+            name = node.getAttribute('name')
+            if len(name) == 0:
+                raise "The tag 'translations' must have a 'name' property."
+            return Translation(name, source, dest, recurse)
+        if node.tagName == "gir":
+            return GirFile(source, dest, recurse)
 
         return Path(source, dest, recurse)
 
@@ -132,60 +144,23 @@ class Meta:
             self.gtk = "gtk+-2.0"
 
 class Framework(Path):
-    def __init__(self, source):
-        Path.__init__(self, source, self.get_dest_path_from_source(source))
-
-    @classmethod
-    def from_node(cls, node):
-        framework = Path.from_node(node, validate=False)
-        framework.dest = Framework.get_dest_path_from_source(framework.source)
-
-        return framework
-
-    @classmethod
-    def get_dest_path_from_source(cls, source):
+    def __init__(self, source, recurse):
         (head, tail) = os.path.split(source)
-        return "${bundle}/Contents/Frameworks/" + tail
+        dest = "${bundle}/Contents/Frameworks/" + tail
+        super(Framework, self).__init__(source, dest, recurse);
 
 class Binary(Path):
-    def __init__(self, source, dest):
-        Path.__init__(self, source, dest)
-
-    @classmethod
-    def from_node(cls, node):
-        binary = Path.from_node(node)
-
-        if not binary.source:
-            raise "The tag 'binary' must have a 'source' property"
-
-        return binary
+    def __init__(self, source, dest, recurse):
+        super(Binary, self).__init__(source, dest, recurse)
 
 class Translation(Path):
-    def __init__(self, name, sourcepath, destpath):
-        Path.__init__(self, sourcepath, destpath)
+    def __init__(self, name, sourcepath, destpath, recurse):
+        super(Translation, self).__init__(sourcepath, destpath, recurse)
         self.name = name
 
-    @classmethod
-    def from_node(cls, node):
-        source = utils.node_get_string(node)
-        dest = node.getAttribute("dest")
-        if len(dest) == 0:
-            dest = None
-        name = node.getAttribute("name")
-        if len(name) == 0:
-            raise "The tag 'translations' must have a 'name' property"
-
-        return Translation(name, source, dest)
-
-
 class GirFile(Path):
-    def __init__(self, sourcepath, destpath):
-        Path.__init__(self, sourcepath, destpath)
-
-    @classmethod
-    def from_node(cls, node):
-        gir = Path.from_node(node)
-        return GirFile(gir.source, gir.dest)
+    def __init__(self, sourcepath, destpath, recurse):
+        super(GirFile, self).__init__(sourcepath, destpath, recurse)
 
 class Data(Path):
     pass
@@ -379,21 +354,21 @@ class Project:
         frameworks = []
         nodes = utils.node_get_elements_by_tag_name(self.root, "framework")
         for node in nodes:
-            frameworks.append(Framework.from_node(node))
+            frameworks.append(Path.from_node(node))
         return frameworks
 
     def get_translations(self):
         translations = []
         nodes = utils.node_get_elements_by_tag_name(self.root, "translations")
         for node in nodes:
-            translations.append(Translation.from_node(node))
+            translations.append(Path.from_node(node))
         return translations
 
     def get_gir(self):
         gir_files = []
         nodes = utils.node_get_elements_by_tag_name(self.root, "gir")
         for node in nodes:
-            gir_files.append(GirFile.from_node(node))
+            gir_files.append(Path.from_node(node))
         return gir_files
 
     def get_main_binary(self):
@@ -401,7 +376,7 @@ class Project:
         if not node:
             raise Exception("The file has no <main-binary> tag")
 
-        binary = Binary.from_node(node)
+        binary = Path.from_node(node)
 
         launcher = self.get_launcher_script()
         if launcher:
@@ -416,14 +391,14 @@ class Project:
         binaries = []
         nodes = utils.node_get_elements_by_tag_name(self.root, "binary")
         for node in nodes:
-            binaries.append(Binary.from_node(node))
+            binaries.append(Path.from_node(node))
         return binaries
 
     def get_data(self):
         data = []
         nodes = utils.node_get_elements_by_tag_name(self.root, "data")
         for node in nodes:
-            data.append(Data.from_node(node))
+            data.append(Path.from_node(node))
         return data
 
 if __name__ == '__main__':
