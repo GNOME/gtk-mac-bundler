@@ -224,17 +224,16 @@ class Bundler:
             if os.path.islink(path.source):
                 continue
             dest = path.copy_target(self.project)
-
             self.binary_paths.append(dest)
-
-            # Clean up duplicates
-            self.binary_paths = list(set(self.binary_paths))
-
             # Clean out any libtool (*.la) files and static libraries
             if os.path.isdir(dest):
                 for root, dirs, files in os.walk(dest):
-                    for name in [l for l in files if l.endswith(".la") or l.endswith(".a")]:
+                    for name in [l for l in files if l.endswith(".la")
+                                 or l.endswith(".a")]:
                         os.remove(os.path.join(root, name))
+
+        # Clean up duplicates
+        self.binary_paths = list(set(self.binary_paths))
 
     # Lists all the binaries copied in so far. Used in the library
     # dependency resolution and icon theme lookup.
