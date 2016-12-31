@@ -2,10 +2,13 @@ import errno
 import sys
 import re
 import os
+import glob
+import shutil
 import xml.dom.minidom
 from xml.dom.minidom import Node
 from plistlib import Plist
 from . import utils
+from distutils import dir_util, file_util
 
 # Base class for anything that can be copied into a bundle with a
 # source and dest.
@@ -90,6 +93,98 @@ class Path(object):
             raise Exception("The destination path must start with ${bundle}")
 
         return True
+
+    # Copies from source to dest, evaluating any variables
+    # in the paths, and returns the real dest.
+    def copy_target(self, project):
+        source = project.evaluate_path(self.source)
+        if self.dest:
+            dest = project.evaluate_path(self.dest)
+        else:
+            # Source must begin with a prefix if we don't have a
+            # dest. Skip past the source prefix and replace it with
+            # the right bundle path instead.
+            p = re.compile("^\${prefix(:.*?)?}/")
+            m = p.match(self.source)
+            if m:
+                relative_dest = project.evaluate_path(self.source[m.end():])
+                dest = project.get_bundle_path("Contents/Resources", relative_dest)
+            else:
+                print("Invalid bundle file, missing or invalid 'dest' property: " + self.dest)
+                sys.exit(1)
+
+        (dest_parent, dest_tail) = os.path.split(dest)
+        utils.makedirs(dest_parent)
+
+        # Check that the source only has wildcards in the last component.
+        p = re.compile("[\*\?]")
+        (source_parent, source_tail) = os.path.split(source)
+        if p.search(source_parent):
+            print("Can't have wildcards except in the last path component: " + source)
+            sys.exit(1)
+
+        if p.search(source_tail):
+            source_check = source_parent
+        else:
+            source_check = source
+        if not os.path.exists(source_check):
+            print("Cannot find source to copy: " + source)
+            sys.exit(1)
+
+        # If the destination has a wildcard as last component (copied
+        # from the source in dest-less paths), ignore the tail.
+        if p.search(dest_tail):
+            dest = dest_parent
+
+        if self.recurse:
+            for root, dirs, files in os.walk(source_parent):
+                destdir = os.path.join(dest,
+                                       os.path.relpath(root, source_parent))
+                utils.makedirs(destdir)
+                for globbed_source in glob.glob(os.path.join(root,
+                                                             source_tail)):
+                    try:
+#                        print "Copying %s to %s" % (globbed_source, destdir)
+                        shutil.copy(globbed_source, destdir)
+                    except EnvironmentError as e:
+                        if e.errno == errno.ENOENT:
+                            print("Warning, source file missing: " + globbed_source)
+                        elif e.errno == errno.EEXIST:
+                            print("Warning, path already exits: " + dest)
+                        else:
+                            print("Error %s when copying file: %s" % ( str(e), globbed_source ))
+                            sys.exit(1)
+
+        else:
+            for globbed_source in glob.glob(source):
+                try:
+                    if os.path.isdir(globbed_source):
+                        #print "dir: %s => %s" % (globbed_source, dest)
+                        dir_util.copy_tree (str(globbed_source), str(dest),
+                                            preserve_mode=1,
+                                            preserve_times=1,
+                                            preserve_symlinks=1,
+                                            update=1,
+                                            verbose=1,
+                                            dry_run=0)
+                    else:
+                        #print "file: %s => %s" % (globbed_source, dest)
+                        file_util.copy_file (str(globbed_source), str(dest),
+                                            preserve_mode=1,
+                                            preserve_times=1,
+                                            update=1,
+                                            link=None,
+                                            verbose=1,
+                                            dry_run=0)
+                except EnvironmentError as e:
+                    if e.errno == errno.ENOENT:
+                        print("Warning, source file missing: " + globbed_source)
+                    elif e.errno == errno.EEXIST:
+                        print("Warning, path already exits: " + dest)
+                    else:
+                        print("Error %s when copying file: %s" %( str(e), globbed_source ))
+                        sys.exit(1)
+        return dest
 
 # Used for anything that has a name and value.
 class Variable:
