@@ -53,6 +53,13 @@ class Path(object):
             return Translation(name, source, dest, recurse)
         if node.tagName == "gir":
             return GirFile(source, dest, recurse)
+        if node.tagName == "icon-theme":
+            name = utils.node_get_string(node)
+            if not name:
+                raise ValueError("Icon theme must have a 'name' property")
+
+            icons = node.getAttribute("icons")
+            return IconTheme(name, icons)
 
         return Path(source, dest, recurse)
 
@@ -260,30 +267,69 @@ class GirFile(Path):
 class Data(Path):
     pass
 
-class IconTheme:
+class IconTheme(Path):
     ICONS_NONE, ICONS_ALL, ICONS_AUTO = list(range(3))
 
-    def __init__(self, name, icons=ICONS_AUTO):
+    def __init__(self, name, icons = "all"):
+        super(IconTheme, self).__init__("${prefix}/share/icons/" + name)
         self.name = name
-        self.source = "${prefix}/share/icons/" + name
+        if icons == "all":
+            self.icons = IconTheme.ICONS_ALL
+        elif icons == "none":
+            self.icons = IconTheme.ICONS_NONE
+        elif icons == "auto" or len(string) == 0:
+            self.icons = IconTheme.ICONS_AUTO
+        else:
+            self.icons = IconTheme.ICONS_ALL
 
-        self.icons = icons
+    def copy_target(self, project):
+        source_base = self.source
+        self.source = os.path.join(self.source, "index.theme")
+        super(IconTheme, self).copy_target(project)
+        self.source = source_base
 
-    @classmethod
-    def from_node(cls, node):
-        name = utils.node_get_string(node)
-        if not name:
-            raise Exception("Icon theme must have a 'name' property")
+    def enumerate_icons(self, project):
+        all_icons = set()
+        if self.icons == IconTheme.ICONS_NONE:
+            return all_icons
+        for root, dirs, files in os.walk(project.evaluate_path(self.source)):
+            for f in files:
+                (head, tail) = os.path.splitext(f)
+                if tail in [".png", ".svg"]:
+                    all_icons.add(head)
+        return all_icons
 
-        string = node.getAttribute("icons")
-        if string == "all":
-            icons = IconTheme.ICONS_ALL
-        elif string == "none":
-            icons = IconTheme.ICONS_NONE
-        elif string == "auto" or len(string) == 0:
-            icons = IconTheme.ICONS_AUTO
+    def copy_icons(self, project, used_icons):
+        if self.icons == IconTheme.ICONS_NONE:
+            return
+        prefix = project.get_prefix()
+        for root, dirs, files in os.walk(project.evaluate_path(self.source)):
+            for f in files:
+                # Go through every file, if it matches the icon
+                # set, copy it.
+                (head, tail) = os.path.splitext(f)
 
-        return IconTheme(name, icons)
+                if head.endswith('.symbolic'):
+                    (head, tail) = os.path.splitext(head)
+
+                if head in used_icons or self.icons == IconTheme.ICONS_ALL:
+                    path = os.path.join(root, f)
+
+                    # Note: Skipping svgs for now, they are really
+                    # big and not really used.
+                    if path.endswith(".svg"):
+                        continue
+
+                    # Replace the real paths with the prefix macro
+                    # so we can use copy_target.
+                    Path("${prefix}" + path[len(prefix):]).copy_target(project)
+
+        # Generate icon cache.
+        path = project.get_bundle_path("Contents/Resources/share/icons", self.name)
+        cmd = "gtk-update-icon-cache -f " + path + " 2>/dev/null"
+        os.popen(cmd)
+
+
 
 class Project:
     def __init__(self, project_path=None):
@@ -417,7 +463,7 @@ class Project:
 
         nodes = utils.node_get_elements_by_tag_name(self.root, "icon-theme")
         for node in nodes:
-            themes.append(IconTheme.from_node(node))
+            themes.append(Path.from_node(node))
 
         # The hicolor theme is mandatory.
         if not [l for l in themes if l.name == "hicolor"]:

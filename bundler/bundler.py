@@ -416,17 +416,8 @@ class Bundler:
         themes = self.project.get_icon_themes()
 
         for theme in themes:
-            Path(os.path.join(theme.source, "index.theme")).copy_target(self.project)
-
-        for theme in themes:
-            if theme.icons == IconTheme.ICONS_NONE:
-                continue
-
-            for root, dirs, files in os.walk(self.project.evaluate_path(theme.source)):
-                for f in files:
-                    (head, tail) = os.path.splitext(f)
-                    if tail in [".png", ".svg"]:
-                        all_icons.add(head)
+            theme.copy_target
+            all_icons |= theme.enumerate_icons(self.project)
 
         strings = set()
 
@@ -440,38 +431,8 @@ class Bundler:
         # FIXME: Also get strings from glade files.
 
         used_icons = all_icons.intersection(strings)
-        prefix = self.project.get_prefix()
-
         for theme in themes:
-            if theme.icons == IconTheme.ICONS_NONE:
-                continue
-
-            for root, dirs, files in os.walk(self.project.evaluate_path(theme.source)):
-                for f in files:
-                    # Go through every file, if it matches the icon
-                    # set, copy it.
-                    (head, tail) = os.path.splitext(f)
-
-                    if head.endswith('.symbolic'):
-                        (head, tail) = os.path.splitext(head)
-
-                    if head in used_icons or theme.icons == IconTheme.ICONS_ALL:
-                        path = os.path.join(root, f)
-
-                        # Note: Skipping svgs for now, they are really
-                        # big and not really used.
-                        if path.endswith(".svg"):
-                            continue
-
-                        # Replace the real paths with the prefix macro
-                        # so we can use copy_target.
-                        Path("${prefix}" + path[len(prefix):]).copy_target(self.project)
-
-        # Generate icon caches.
-        for theme in themes:
-            path = self.project.get_bundle_path("Contents/Resources/share/icons", theme.name)
-            cmd = "gtk-update-icon-cache -f " + path + " 2>/dev/null"
-            os.popen(cmd)
+            theme.copy_icons(self.project, used_icons)
 
     def copy_translations(self):
         translations = self.project.get_translations()
