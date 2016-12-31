@@ -8,7 +8,6 @@ import xml.dom.minidom
 from xml.dom.minidom import Node
 from plistlib import Plist
 from . import utils
-from distutils import dir_util, file_util
 
 # Base class for anything that can be copied into a bundle with a
 # source and dest.
@@ -93,6 +92,43 @@ class Path(object):
 
         return True
 
+    def copy_file(self, source, dest):
+        try:
+            # print "Copying %s to %s" % (globbed_source, destdir)
+            shutil.copy2(source, dest)
+        except EnvironmentError as e:
+            if e.errno == errno.ENOENT:
+                print("Warning, source file missing: " + source)
+            elif e.errno == errno.EEXIST:
+                print("Warning, path already exits: " + dest)
+            else:
+                raise EnvironmentError("Error %s when copying file: %s"
+                                       % (str(e), source))
+
+
+    def copy_target_glob_recursive(self, source, dest):
+        source_parent, source_tail = os.path.split(source)
+        for root, dirs, files in os.walk(source_parent):
+            destdir = os.path.join(dest, os.path.relpath(root, source_parent))
+            utils.makedirs(destdir)
+            for globbed_source in glob.glob(os.path.join(root, source_tail)):
+                self.copy_file(globbed_source, destdir)
+
+    def copy_target_recursive(self, source, dest):
+        for root, dirs, files in os.walk(source):
+            destdir = os.path.join(dest, os.path.relpath(root, source))
+            utils.makedirs(destdir)
+            for file in files:
+                self.copy_file(os.path.join(root, file), destdir)
+
+
+    def copy_target_glob(self, source, dest):
+        for globbed_source in glob.glob(source):
+                if os.path.isdir(globbed_source):
+                    self.copy_target_recursive(globbed_source, dest)
+                else:
+                    self.copy_file(globbed_source, dest)
+
     # Copies from source to dest, evaluating any variables
     # in the paths, and returns the real dest.
     def copy_target(self, project):
@@ -109,8 +145,8 @@ class Path(object):
                 relative_dest = project.evaluate_path(self.source[m.end():])
                 dest = project.get_bundle_path("Contents/Resources", relative_dest)
             else:
-                print("Invalid bundle file, missing or invalid 'dest' property: " + self.dest)
-                sys.exit(1)
+                raise ValueError ("Invalid path, missing or invalid dest %s."
+                                  % self.dest)
 
         (dest_parent, dest_tail) = os.path.split(dest)
         utils.makedirs(dest_parent)
@@ -119,16 +155,15 @@ class Path(object):
         p = re.compile("[\*\?]")
         (source_parent, source_tail) = os.path.split(source)
         if p.search(source_parent):
-            print("Can't have wildcards except in the last path component: " + source)
-            sys.exit(1)
+            raise ValueError("Can't have wildcards except in the last path "
+                             "component: " + source)
 
         if p.search(source_tail):
             source_check = source_parent
         else:
             source_check = source
         if not os.path.exists(source_check):
-            print("Cannot find source to copy: " + source)
-            sys.exit(1)
+            raise ValueError("Cannot find source to copy: " + source)
 
         # If the destination has a wildcard as last component (copied
         # from the source in dest-less paths), ignore the tail.
@@ -136,53 +171,9 @@ class Path(object):
             dest = dest_parent
 
         if self.recurse:
-            for root, dirs, files in os.walk(source_parent):
-                destdir = os.path.join(dest,
-                                       os.path.relpath(root, source_parent))
-                utils.makedirs(destdir)
-                for globbed_source in glob.glob(os.path.join(root,
-                                                             source_tail)):
-                    try:
-#                        print "Copying %s to %s" % (globbed_source, destdir)
-                        shutil.copy(globbed_source, destdir)
-                    except EnvironmentError as e:
-                        if e.errno == errno.ENOENT:
-                            print("Warning, source file missing: " + globbed_source)
-                        elif e.errno == errno.EEXIST:
-                            print("Warning, path already exits: " + dest)
-                        else:
-                            print("Error %s when copying file: %s" % ( str(e), globbed_source ))
-                            sys.exit(1)
-
+            self.copy_target_glob_recursive(source, dest)
         else:
-            for globbed_source in glob.glob(source):
-                try:
-                    if os.path.isdir(globbed_source):
-                        #print "dir: %s => %s" % (globbed_source, dest)
-                        dir_util.copy_tree (str(globbed_source), str(dest),
-                                            preserve_mode=1,
-                                            preserve_times=1,
-                                            preserve_symlinks=1,
-                                            update=1,
-                                            verbose=1,
-                                            dry_run=0)
-                    else:
-                        #print "file: %s => %s" % (globbed_source, dest)
-                        file_util.copy_file (str(globbed_source), str(dest),
-                                            preserve_mode=1,
-                                            preserve_times=1,
-                                            update=1,
-                                            link=None,
-                                            verbose=1,
-                                            dry_run=0)
-                except EnvironmentError as e:
-                    if e.errno == errno.ENOENT:
-                        print("Warning, source file missing: " + globbed_source)
-                    elif e.errno == errno.EEXIST:
-                        print("Warning, path already exits: " + dest)
-                    else:
-                        print("Error %s when copying file: %s" %( str(e), globbed_source ))
-                        sys.exit(1)
+            self.copy_target_glob(source, dest)
         return dest
 
 # Used for anything that has a name and value.
