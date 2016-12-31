@@ -65,39 +65,31 @@ class Path(object):
 
     @classmethod
     def validate(cls, source, dest):
-        if source and len(source) == 0:
-            source = None
-        if dest and len(dest) == 0:
-            dest = None
-
-        if not source or len(source) == 0:
-            raise Exception("The source path cannot be empty")
+        if not source:
+            raise ValueError("The source path cannot be empty")
 
         if source.startswith("${bundle}"):
-            raise Exception("The source path cannot use a ${bundle} macro")
+            raise ValueError("The source path %s cannot use a ${bundle} macro"
+                             % source)
 
         if dest and dest.startswith("${prefix"):
-            raise Exception("The destination path cannot use a ${prefix} macro")
+            raise ValueError("The destination path %s cannot use a ${prefix} "
+                             "macro" % dest)
 
-        if not os.path.isabs(source):
-            if not (source.startswith("${project}") or source.startswith("${env:") or \
-                    source.startswith("${pkg:") or source.startswith("${prefix}") or \
-                    source.startswith("${prefix:")):
-                raise Exception("The source path must be absolute or use one of the "
-                                "predefined macros ${project}, ${prefix}, ${prefix:*}, "
-                                "${env:*}, or ${pkg:*:*}")
+        p = re.compile("^\${(?:project}|prefix[:}]|pkg:|env:)")
+        if not (os.path.isabs(source) or p.match(source)):
+            raise ValueError("The source path %s must be absolute or use one of"
+                             " the predefined macros ${project}, ${prefix},"
+                             " ${prefix:*}, ${env:*}, or ${pkg:*:*}" % source)
 
-        if not source.startswith("${prefix") and os.path.isabs(source):
-            if not dest:
-                raise Exception("If the source doesn't use a ${prefix} or ${prefix:*} "
-                                "macro, the destination path must be set " + dest)
+        if not (source.startswith("${prefix") or dest):
+            raise ValueError("If the source %s doesn't use a ${prefix} or "
+                             "${prefix:*} macro, the destination path must be "
+                             "set" % source)
 
-        if not dest and not source.startswith("${prefix"):
-            raise Exception("If the destination path is empty, the source must use "
-                            "a ${prefix} or ${prefix:*} macro")
-
-        if dest and len(dest) > 0 and not dest.startswith("${bundle}"):
-            raise Exception("The destination path must start with ${bundle}")
+        if dest and not dest.startswith("${bundle}"):
+            raise ValueError("The destination path %s must start with ${bundle}"
+                             % dest)
 
         return True
 
