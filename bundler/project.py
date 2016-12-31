@@ -260,6 +260,26 @@ class Translation(Path):
         super(Translation, self).__init__(sourcepath, destpath, recurse)
         self.name = name
 
+    def copy_target(self, project):
+        if not self.name:
+            raise "No program name to tranlate!"
+
+        def name_filter(filename):
+            name, ext = os.path.splitext(os.path.split(filename)[1])
+            if name != self.name or ext not in (".mo", ".po"):
+                return False
+            return True
+
+        source = project.evaluate_path(self.source)
+        if source == None:
+                raise "Failed to parse %s translation source!" % self.name
+        prefix = project.get_prefix()
+        for root, trees, files in os.walk(source):
+            for file in filter(name_filter, files):
+                path = os.path.join(root, file)
+                Path("${prefix}" + path[len(prefix):], self.dest).copy_target(project)
+
+
 class GirFile(Path):
     def __init__(self, sourcepath, destpath, recurse):
         super(GirFile, self).__init__(sourcepath, destpath, recurse)

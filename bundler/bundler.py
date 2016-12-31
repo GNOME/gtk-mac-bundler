@@ -435,32 +435,8 @@ class Bundler:
             theme.copy_icons(self.project, used_icons)
 
     def copy_translations(self):
-        translations = self.project.get_translations()
-        prefix = self.project.get_prefix()
-
-
-        def name_filter(filename):
-            path, fname = os.path.split(filename)
-            name, ext = os.path.splitext(fname)
-            if name != program.name:
-                return False
-            elif ext not in (".mo", ".po"):
-                return False
-            else:
-                return True
-
-        for program in translations:
-            if program.name == "" or program.name == None:
-                raise "No program name to tranlate!"
-
-            source = self.project.evaluate_path(program.source)
-            if source == None:
-                raise "Failed to parse translation source!"
-            for root, trees, files in os.walk(source):
-                for file in filter(name_filter, files):
-                    path = os.path.join(root, file)
-                    Path("${prefix}" + path[len(prefix):], program.dest).copy_target(self.project)
-
+        for translation in self.project.get_translations():
+            translation.copy_target(self.project)
 
     def install_gir(self):
         gir_files = self.project.get_gir()
