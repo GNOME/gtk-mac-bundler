@@ -223,6 +223,8 @@ class Bundler:
         for path in binaries:
             if os.path.islink(path.source):
                 continue
+            if (path.compute_destination(self.project) in self.binary_paths):
+                continue
             dest = path.copy_target(self.project)
             self.binary_paths.append(dest)
             # Clean out any libtool (*.la) files and static libraries

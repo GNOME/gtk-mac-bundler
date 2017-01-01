@@ -99,7 +99,7 @@ class Path(object):
         except EnvironmentError as e:
             if e.errno == errno.ENOENT:
                 print("Warning, source file missing: " + source)
-            elif e.errno == errno.EEXIST:
+            elif e.errno in (errno.EEXIST, errno.EACCES):
                 print("Warning, path already exits: " + dest)
             else:
                 raise EnvironmentError("Error %s when copying file: %s"
@@ -129,10 +129,7 @@ class Path(object):
                 else:
                     self.copy_file(globbed_source, dest)
 
-    # Copies from source to dest, evaluating any variables
-    # in the paths, and returns the real dest.
-    def copy_target(self, project):
-        source = project.evaluate_path(self.source)
+    def compute_destination(self, project):
         if self.dest:
             dest = project.evaluate_path(self.dest)
         else:
@@ -147,10 +144,20 @@ class Path(object):
             else:
                 raise ValueError ("Invalid path, missing or invalid dest %s."
                                   % self.dest)
-
+        # If the destination has a wildcard as last component (copied
+        # from the source in dest-less paths), ignore the tail.
         (dest_parent, dest_tail) = os.path.split(dest)
-        utils.makedirs(dest_parent)
+        p = re.compile("[\*\?]")
+        if p.search(dest_tail):
+            dest = dest_parent
 
+        utils.makedirs(dest_parent)
+        return dest
+
+    # Copies from source to dest, evaluating any variables
+    # in the paths, and returns the real dest.
+    def copy_target(self, project):
+        source = project.evaluate_path(self.source)
         # Check that the source only has wildcards in the last component.
         p = re.compile("[\*\?]")
         (source_parent, source_tail) = os.path.split(source)
@@ -165,10 +172,7 @@ class Path(object):
         if not os.path.exists(source_check):
             raise ValueError("Cannot find source to copy: " + source)
 
-        # If the destination has a wildcard as last component (copied
-        # from the source in dest-less paths), ignore the tail.
-        if p.search(dest_tail):
-            dest = dest_parent
+        dest = self.compute_destination(project)
 
         if self.recurse:
             self.copy_target_glob_recursive(source, dest)
