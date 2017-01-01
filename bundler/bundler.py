@@ -440,39 +440,19 @@ class Bundler:
             translation.copy_target(self.project)
 
     def install_gir(self):
-        gir_files = self.project.get_gir()
-        bundle_gir_dir = self.project.get_bundle_path('Contents', 'Resources',
-                                                      'share', 'gir-1.0')
-        bundle_typelib_dir = self.project.get_bundle_path('Contents', 'Resources',
-                                                          'lib', 'girepository-1.0')
-        old_lib_path = os.path.join(self.project.get_prefix(), 'lib')
-        os.makedirs(bundle_gir_dir)
-        os.makedirs(bundle_typelib_dir)
-        import subprocess
+        if not self.project.get_gir():
+            return
+        gir_dest = self.project.get_bundle_path('Contents', 'Resources',
+                                                'share', 'gir-1.0')
+        typelib_dest = self.project.get_bundle_path('Contents', 'Resources',
+                                                    'lib', 'girepository-1.0')
+        lib_path = os.path.join(self.project.get_prefix(), 'lib')
+        utils.makedirs(gir_dest)
+        utils.makedirs(typelib_dest)
 
-        def transform_file(filename):
-            path, fname = os.path.split(filename)
-            name, ext = os.path.splitext(fname)
-
-            with open (filename, "r") as source:
-                lines = source.readlines()
-            newpath = os.path.join(bundle_gir_dir, fname)
-            typelib = os.path.join(bundle_typelib_dir, name + '.typelib')
-            with open (newpath, "w") as target:
-                for line in lines:
-                    target.write(re.sub(old_lib_path,
-                                        '@executable_path/../Resources/lib',
-                                        line))
-            subprocess.call(['g-ir-compiler', '--output=' + typelib, newpath])
-            self.binary_paths.append(typelib)
-
-        for gir in gir_files:
-            filename = self.project.evaluate_path(gir.source)
-            for globbed_source in glob.glob(filename):
-                try:
-                    transform_file(globbed_source)
-                except Exception as err:
-                    print('Error in transformation of %s: %s' % (globbed_source, err))
+        for gir in self.project.get_gir():
+            self.binary_paths.extend(gir.copy_target(self.project, gir_dest,
+                                                     typelib_dest, lib_path))
 
     def run(self):
         # Remove the temp location forcefully.

@@ -270,6 +270,33 @@ class Translation(Path):
 class GirFile(Path):
     def __init__(self, sourcepath, destpath, recurse):
         super(GirFile, self).__init__(sourcepath, destpath, recurse)
+        self.bundle_path = '@executable_path/../Resources/lib'
+
+    def copy_target(self, project, gir_dest, typelib_dest, lib_path):
+        import subprocess
+
+        def transform_file(filename):
+            path, fname = os.path.split(filename)
+            name, ext = os.path.splitext(fname)
+
+            with open (filename, "r") as source:
+                lines = source.readlines()
+            gir_file = os.path.join(gir_dest, fname)
+            typelib = os.path.join(typelib_dest, name + '.typelib')
+            with open (gir_file, "w") as target:
+                for line in lines:
+                    target.write(re.sub(lib_path, self.bundle_path, line))
+            subprocess.call(['g-ir-compiler', '--output=' + typelib, gir_file])
+            return typelib
+
+        filename = project.evaluate_path(self.source)
+        typelib_paths = []
+        for globbed_source in glob.glob(filename):
+            try:
+                typelib_paths.append(transform_file(globbed_source))
+            except Exception as err:
+                print('Error in transformation of %s: %s' % (globbed_source, err))
+        return typelib_paths
 
 class Data(Path):
     pass
