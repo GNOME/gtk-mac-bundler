@@ -112,13 +112,18 @@ class Path(object):
         source_parent, source_tail = os.path.split(source)
         for root, dirs, files in os.walk(source_parent):
             destdir = os.path.join(dest, os.path.relpath(root, source_parent))
+            glob_list = glob.glob(os.path.join(root, source_tail))
+            if not glob_list:
+                continue
             utils.makedirs(destdir)
-            for globbed_source in glob.glob(os.path.join(root, source_tail)):
+            for globbed_source in glob_list:
                 self.copy_file(project, globbed_source, destdir)
 
     def copy_target_recursive(self, project, source, dest):
         for root, dirs, files in os.walk(source):
             destdir = os.path.join(dest, os.path.relpath(root, source))
+            if not files:
+                continue
             utils.makedirs(destdir)
             for file in files:
                 self.copy_file(project, os.path.join(root, file), destdir)
