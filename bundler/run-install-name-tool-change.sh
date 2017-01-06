@@ -21,7 +21,7 @@ if [ "x$ACTION" == "xchange" ]; then
 	fi
     done;
 elif [ "x$ACTION" == "xid" ]; then
-    lib="`otool -D $LIBRARY 2>/dev/null | grep ^$WRONG_PREFIX`"
+    lib="`otool -D $LIBRARY 2>/dev/null | grep ^$WRONG_PREFIX | sed s,\${WRONG_PREFIX},,`"
     install_name_tool -id "$RIGHT_PREFIX/$lib" $LIBRARY;
 fi
     
