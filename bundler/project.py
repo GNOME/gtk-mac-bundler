@@ -4,6 +4,7 @@ import re
 import os
 import glob
 import shutil
+from subprocess import call, check_call, Popen, PIPE, STDOUT
 import xml.dom.minidom
 from xml.dom.minidom import Node
 from plistlib import Plist
@@ -26,6 +27,7 @@ class Path(object):
         self.source = source
         self.dest = dest
         self.recurse = recurse
+        self.bundledir = 'Resources'
 
     @classmethod
     def from_node(cls, node, validate=True):
@@ -92,9 +94,9 @@ class Path(object):
 
         return True
 
-    def copy_file(self, source, dest):
+    def copy_file(self, project, source, dest):
         try:
-            # print "Copying %s to %s" % (globbed_source, destdir)
+            # print "Copying %s to %s" % (source, dest)
             shutil.copy2(source, dest)
         except EnvironmentError as e:
             if e.errno == errno.ENOENT:
@@ -106,28 +108,28 @@ class Path(object):
                                        % (str(e), source))
 
 
-    def copy_target_glob_recursive(self, source, dest):
+    def copy_target_glob_recursive(self, project, source, dest):
         source_parent, source_tail = os.path.split(source)
         for root, dirs, files in os.walk(source_parent):
             destdir = os.path.join(dest, os.path.relpath(root, source_parent))
             utils.makedirs(destdir)
             for globbed_source in glob.glob(os.path.join(root, source_tail)):
-                self.copy_file(globbed_source, destdir)
+                self.copy_file(project, globbed_source, destdir)
 
-    def copy_target_recursive(self, source, dest):
+    def copy_target_recursive(self, project, source, dest):
         for root, dirs, files in os.walk(source):
             destdir = os.path.join(dest, os.path.relpath(root, source))
             utils.makedirs(destdir)
             for file in files:
-                self.copy_file(os.path.join(root, file), destdir)
+                self.copy_file(project, os.path.join(root, file), destdir)
 
 
-    def copy_target_glob(self, source, dest):
+    def copy_target_glob(self, project, source, dest):
         for globbed_source in glob.glob(source):
                 if os.path.isdir(globbed_source):
-                    self.copy_target_recursive(globbed_source, dest)
+                    self.copy_target_recursive(project, globbed_source, dest)
                 else:
-                    self.copy_file(globbed_source, dest)
+                    self.copy_file(project, globbed_source, dest)
 
     def compute_destination(self, project):
         if self.dest:
@@ -139,8 +141,9 @@ class Path(object):
             p = re.compile("^\${prefix(:.*?)?}/")
             m = p.match(self.source)
             if m:
+                pathdir = os.path.join("Contents", self.bundledir)
                 relative_dest = project.evaluate_path(self.source[m.end():])
-                dest = project.get_bundle_path("Contents/Resources", relative_dest)
+                dest = project.get_bundle_path(pathdir, relative_dest)
             else:
                 raise ValueError ("Invalid path, missing or invalid dest %s."
                                   % self.dest)
@@ -154,9 +157,14 @@ class Path(object):
         utils.makedirs(dest_parent)
         return dest
 
-    # Copies from source to dest, evaluating any variables
-    # in the paths, and returns the real dest.
-    def copy_target(self, project):
+    def is_source_glob(self):
+        p = re.compile("[\*\?]")
+        (source_parent, source_tail) = os.path.split(self.source)
+        if p.search(source_tail):
+            return True
+        return False
+
+    def compute_source_path(self, project):
         source = project.evaluate_path(self.source)
         # Check that the source only has wildcards in the last component.
         p = re.compile("[\*\?]")
@@ -172,12 +180,17 @@ class Path(object):
         if not os.path.exists(source_check):
             raise ValueError("Cannot find source to copy: " + source)
 
-        dest = self.compute_destination(project)
+        return source
 
+    # Copies from source to dest, evaluating any variables
+    # in the paths, and returns the real dest.
+    def copy_target(self, project):
+        source = self.compute_source_path(project)
+        dest = self.compute_destination(project)
         if self.recurse:
-            self.copy_target_glob_recursive(source, dest)
+            self.copy_target_glob_recursive(project, source, dest)
         else:
-            self.copy_target_glob(source, dest)
+            self.copy_target_glob(project, source, dest)
         return dest
 
 # Used for anything that has a name and value.
@@ -232,15 +245,105 @@ class Meta:
         else:
             self.gtk = "gtk+-2.0"
 
-class Framework(Path):
+class Binary(Path):
+    def __init__(self, source, dest=None, recurse=False):
+        super(Binary, self).__init__(source, dest, recurse)
+        self.bundledir = 'Resources'
+
+    def copy_file(self, project, source, dest):
+        path, ext = os.path.splitext(source)
+        # Skip static libs and libtool files:
+        if ext in ('.la', '.a'):
+            return
+        super(Binary, self).copy_file(project, source, dest)
+        if os.path.isdir(dest):
+            dest = os.path.join(dest, os.path.split(source)[1])
+        # print ("Copy binary file %s to %s %s"
+        #       % (source, 'directory' if os.path.isdir(dest) else 'file', dest))
+        self.fix_rpaths(project, dest)
+        # self.strip_debugging(dest)
+        self.sign(project, dest)
+        self.destinations.append(dest)
+
+    def copy_target(self, project):
+        self.destinations = []
+        if os.path.isdir(self.compute_source_path(project)):
+            source = self.source
+            self.source = os.path.join(source, '*.so')
+            self.recurse = True
+            super(Binary, self).copy_target(project)
+            self.source = os.path.join(source, '*.dylib')
+            super(Binary, self).copy_target(project)
+            self.source = source
+        else:
+            super(Binary, self).copy_target(project)
+        return self.destinations
+
+    def fix_rpaths(self, project, target, frameworks = []):
+        if not project.get_meta().run_install_name_tool:
+            return
+        # Byte compiled scheme and python files don't have rpaths.
+        if (target.endswith('.go') or target.endswith('.pyc') or
+            target.endswith('.pyo')):
+            return
+        cmd = os.path.join(os.path.dirname(__file__),
+                           "run-install-name-tool-change.sh")
+        for prefix in project.get_meta().prefixes:
+            prefix_path = project.get_prefix(prefix)
+            call([cmd, target, prefix_path, self.bundledir, "change"])
+            call([cmd, target, prefix_path, self.bundledir, "id"])
+            for fw in frameworks:
+                call([cmd, path, fw.get_name(), fw.get_bundlename(), 'change'])
+
+    def sign(self, project, target):
+        if "APPLICATION_CERT" not in os.environ:
+            return
+        cert = os.getenv("APPLICATION_CERT")
+        ident = project.get_bundle_id()
+        output = Popen(['codesign', '-s', cert, '-i',
+                        ident, target], stdout=PIPE, stderr=STDOUT)
+        results = output.communicate()[0]
+        if results:
+            raise SystemError("Warning! Codesigning %s returned error %s."
+                  % (target, results))
+
+    def strip_debugging(self, target):
+        if target.endswith(".dylib") or target.endswith(".so"):
+            os.chmod(path, 0o644)
+            os.system("strip -x " + target + " 2>/dev/null")
+            os.chmod(target, 0o444)
+        else:
+            os.chmod(target, 0o755)
+            os.system("strip -ur " + target + " 2>/dev/null")
+            os.chmod(target, 0o555)
+
+
+class Framework(Binary):
     def __init__(self, source, recurse):
         (head, tail) = os.path.split(source)
         dest = "${bundle}/Contents/Frameworks/" + tail
         super(Framework, self).__init__(source, dest, recurse);
+        self.bundledir = "Frameworks"
 
-class Binary(Path):
-    def __init__(self, source, dest, recurse):
-        super(Binary, self).__init__(source, dest, recurse)
+    def get_name(self):
+        fwname, fwext = os.path.splitext(os.path.basename(self.dest))
+        return fwname
+
+    def get_bundle_name(self):
+        return os.path.join(self.bundledir, self.get_name())
+
+    def fix_rpaths(self, project, frameworks):
+        if not project.get_meta().run_install_name_tool:
+            return
+        dest = self.compute_desitnation(project)
+        cmd = os.path.join(os.path.dirname(__file__),
+                           "run-install-name-tool-change.sh")
+        check_all([cmd, dest, self.get_name(), self.bundledir, 'id'])
+        for dep in frameworks:
+            if dep == self:
+                continue
+            check_call([cmd, dest, dep.get_name(),
+                        dep.get_bundle_name(), 'change'])
 
 class Translation(Path):
     def __init__(self, name, sourcepath, destpath, recurse):
@@ -273,7 +376,6 @@ class GirFile(Path):
         self.bundle_path = '@executable_path/../Resources/lib'
 
     def copy_target(self, project, gir_dest, typelib_dest, lib_path):
-        import subprocess
 
         def transform_file(filename):
             path, fname = os.path.split(filename)
@@ -286,7 +388,7 @@ class GirFile(Path):
             with open (gir_file, "w") as target:
                 for line in lines:
                     target.write(re.sub(lib_path, self.bundle_path, line))
-            subprocess.call(['g-ir-compiler', '--output=' + typelib, gir_file])
+            call(['g-ir-compiler', '--output=' + typelib, gir_file])
             return typelib
 
         filename = project.evaluate_path(self.source)

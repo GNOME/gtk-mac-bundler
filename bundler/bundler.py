@@ -2,6 +2,7 @@ import sys
 import os, errno, glob
 import shutil
 import re
+from subprocess import Popen
 from plistlib import Plist
 from .project import *
 from . import utils
@@ -17,7 +18,8 @@ class Bundler:
 
         # List of paths that should be recursively searched for
         # binaries that are used to find library dependencies.
-        self.binary_paths = []
+        self.binaries_to_copy = []
+        self.copied_binaries = []
         #List of frameworks moved into the bundle which need to be set
         #up for private use.
         self.frameworks = []
@@ -64,6 +66,18 @@ class Bundler:
         path = Path(self.project.get_plist_path(),
                     self.project.get_bundle_path("Contents/Info.plist"))
         path.copy_target(self.project)
+    def run_module_catalog(self, env_var, env_val, exe_name):
+        exepath = self.project.evaluate_path('${prefix}/bin/%s' % exe_name)
+        temppath = self.project.get_bundle_path('Contents/MacOS/', exe_name)
+        path = Binary(exepath, temppath)
+        path.copy_target(self.project)
+
+        local_env = os.environ.copy()
+        local_env[env_var] = env_val
+        p = Popen(temppath, env=local_env, stdout=PIPE)
+        f = p.communicate()[0].splitlines()
+        os.remove(temppath)
+        return f
 
     def create_pango_setup(self):
         if utils.has_pkgconfig_module("pango") and \
@@ -89,8 +103,8 @@ class Bundler:
         f.write("\n")
         f.close()
 
-        cmd = "PANGO_RC_FILE=" + tmp_filename + " pango-querymodules"
-        f = os.popen(cmd)
+        env_var = "PANGO_RC_FILE"
+        f = self.run_module_catalog(env_var, tmp_filename, 'pango-querymodules')
 
         path = self.project.get_bundle_path("Contents/Resources/etc/pango")
         utils.makedirs(path)
@@ -140,8 +154,9 @@ class Bundler:
 
     def create_gtk_immodules_setup(self):
         path = self.project.get_bundle_path("Contents/Resources")
-        cmd = "GTK_EXE_PREFIX=" + path + " gtk-query-immodules-" + self.project.get_gtk_version()
-        f = os.popen(cmd)
+        env_var = "GTK_EXE_PREFIX"
+        exe_name = 'gtk-query-immodules-' + self.project.get_gtk_version()
+        f = self.run_module_catalog(env_var, path, exe_name)
 
         path = self.project.get_bundle_path("Contents/Resources/etc/",
                                             self.project.get_gtk_dir())
@@ -199,8 +214,9 @@ class Bundler:
         modulespath = utils.evaluate_pkgconfig_variables (modulespath)
         cachepath = utils.evaluate_pkgconfig_variables (cachepath)
 
-        cmd = "GDK_PIXBUF_MODULEDIR=" + modulespath + " gdk-pixbuf-query-loaders"
-        f = os.popen(cmd)
+        env_var = 'GDK_PIXBUF_MODULEDIR'
+        f = self.run_module_catalog(env_var, modulespath,
+                                    'gdk-pixbuf-query-loaders')
 
         utils.makedirs(os.path.dirname(cachepath))
         fout = open(cachepath, "w")
@@ -219,23 +235,27 @@ class Bundler:
             fout.write("\n")
         fout.close()
 
-    def copy_binaries(self, binaries):
+    def copy_binaries(self):
+        #clean up duplicates
+        binaries = list(set(self.binaries_to_copy))
         for path in binaries:
+            if not isinstance(path, Path):
+                print("Warning, %s not a Path object, skipping." % path)
+                continue
             if os.path.islink(path.source):
                 continue
-            if (path.compute_destination(self.project) in self.binary_paths):
+            if (path.compute_destination(self.project) in binaries):
                 continue
-            dest = path.copy_target(self.project)
-            self.binary_paths.append(dest)
-            # Clean out any libtool (*.la) files and static libraries
-            if os.path.isdir(dest):
-                for root, dirs, files in os.walk(dest):
-                    for name in [l for l in files if l.endswith(".la")
-                                 or l.endswith(".a")]:
-                        os.remove(os.path.join(root, name))
-
-        # Clean up duplicates
-        self.binary_paths = list(set(self.binary_paths))
+            copied_paths = path.copy_target(self.project)
+            if isinstance(copied_paths, basestring):
+                print("Warning: copy_target returned string %s" % copied_paths)
+                copied_paths = [copied_paths]
+            bad_paths = [p for p in copied_paths if (p.endswith('.la')
+                                                     or p.endswith('.a'))]
+            for path in bad_paths:
+                os.remove(path)
+                copied_paths.remove(path)
+            self.copied_binaries.extend(copied_paths)
 
     # Lists all the binaries copied in so far. Used in the library
     # dependency resolution and icon theme lookup.
@@ -246,13 +266,24 @@ class Bundler:
             if path.endswith(".so") or path.endswith(".dylib") or os.access(path, os.X_OK):
                 return True
             return False
+
         paths = []
-        for path in self.binary_paths:
-            if os.path.isdir(path):
-                for root, dirs, files in os.walk(path):
-                    paths.extend([os.path.join(root, l) for l in files])
-            else:
-                paths.append(path)
+        for path in self.copied_binaries:
+            try:
+                if os.path.isdir(path):
+                    print ("Recursing down copied binary path %s." % path)
+                    for root, dirs, files in os.walk(path):
+                        paths.extend([os.path.join(root, l) for l in files])
+                    else:
+                        paths.append(path)
+            except TypeError as err:
+                if isinstance(path, Path):
+                    print("Warning, Path object for %s in copied binaries list."
+                          % path.source)
+                else:
+                    print("Warning: Wrong object of type %s in copied_binaries list."
+                      % type(path))
+                continue
 
         paths = list(filter(filter_path, paths))
         return list(set(paths))
@@ -265,7 +296,7 @@ class Bundler:
         # resolved.
         n_iterations = 0
         n_paths = 0
-        paths = self.list_copied_binaries()
+        paths = self.binaries_to_copy
 
         def relative_path_map(line):
             if not os.path.isabs(line):
@@ -278,7 +309,7 @@ class Bundler:
 
         def prefix_filter(line):
             if not "(compatibility" in line:
-                # print "Removed %s" % line
+                #print "Removed %s" % line
                 return False
 
             if line.startswith("/usr/X11"):
@@ -292,21 +323,42 @@ class Bundler:
                 if not line.startswith("/usr/lib") and not line.startswith("/System/Library"):
                     print("Warning, library not available in any prefix:",
                           line.strip().split()[0])
-
                 return False
 
             return True
 
         while n_paths != len(paths):
-            cmds = [ "otool -L " ]
+            cmds = ['otool', '-L']
+            binaries= []
             for path in paths:
-                cmds.append(path + " ")
+                if isinstance(path, Path):
+                    source = path.compute_source_path(self.project)
+                    if path.is_source_glob():
+                        dir, pattern = os.path.split(source)
+                        for root, dirs, files in os.walk(dir):
+                            for item in glob.glob(os.path.join(root, pattern)):
+                                binaries.append(os.path.join(root, item))
+                    elif os.path.isdir(source):
+                        for root, dirs, files in os.walk(source):
+                            for item in glob.glob(os.path.join(root, '*.so')):
+                                binaries.append(os.path.join(root, item))
+                            for item in glob.glob(os.path.join(root, '*.dylib')):
+                                binaries.append(os.path.join(root, item))
+                    else:
+                        binaries.append(source)
+                else:
+                    binaries.append(path)
 
-            cmd = ''.join(cmds)
-            f = os.popen(cmd)
-
+            if not binaries:
+                break
+            cmds.extend(binaries)
+            f = Popen(cmds, stdout=PIPE, stderr=PIPE)
+            results, errors = f.communicate()
+            if errors:
+                print("otool errors:\n%s" % errors)
             prefixes = self.meta.prefixes
-            lines = list(filter(prefix_filter, [line.strip() for line in f]))
+            lines = list(filter(prefix_filter,
+                                [line.strip() for line in results.splitlines()]))
             p = re.compile("(.*\.dylib\.?.*)\s\(compatibility.*$")
             lines = utils.filterlines(p, lines)
             lines = list(map(relative_path_map, lines))
@@ -316,7 +368,7 @@ class Bundler:
                 # create a Path object.
                 for (key, value) in list(prefixes.items()):
                     if library.startswith(value):
-                        path = Path("${prefix:" + key + "}" + library[len(value):])
+                        path = Binary("${prefix:" + key + "}" + library[len(value):])
                         new_libraries.append(path)
 
             n_paths = len(paths)
@@ -325,71 +377,9 @@ class Bundler:
                 print("Too many tries to resolve library dependencies")
                 sys.exit(1)
 
-            self.copy_binaries(new_libraries)
-            paths = self.list_copied_binaries()
+            self.binaries_to_copy.extend(new_libraries)
+            paths = new_libraries
 
-    def run_install_name_tool(self):
-        print("Running install name tool")
-
-        paths = self.list_copied_binaries()
-        prefixes = self.meta.prefixes
-
-        # First change all references in libraries.
-        for prefix in prefixes:
-            prefix_path = self.project.get_prefix(prefix)
-            print("Going through prefix: " + prefix_path)
-            for path in paths:
-                cmd = os.path.join(os.path.dirname(__file__), "run-install-name-tool-change.sh") + " " + path + " " + prefix_path + " Resources" + " change"
-                f = os.popen(cmd)
-                for line in f:
-                    print(line)
-
-        # Then change the id of all libraries. Skipping this part for now
-        #for path in paths:
-        #    cmd = os.path.join(os.path.dirname(__file__), "run-install-name-tool-id.sh") + " " + path
-        #    print cmd
-        #    f = os.popen(cmd)
-        #    for line in f:
-        #        print line
-
-        for framework in self.frameworks:
-            fw_name, ext = os.path.splitext(os.path.basename(framework))
-            fwl = os.path.join(framework, fw_name)
-            print("Importing Framework: " + fwl)
-# Fix the framework IDs
-            cmd = os.path.join(os.path.dirname(__file__), "run-install-name-tool-change.sh") + " " + fwl + " " + fw_name + " Frameworks" + " id"
-            f = os.popen(cmd)
-            for line in f:
-                print(line)
-# Fix the dependencies in other libraries
-            for path in paths:
-                cmd = os.path.join(os.path.dirname(__file__), "run-install-name-tool-change.sh") + " " + path + " " + fw_name + " Frameworks/" + fw_name + " change"
-                f = os.popen(cmd)
-                for line in f:
-                    print(line)
-#fix the dependencies in frameworks
-            for ufw in self.frameworks:
-                ufw_name, ext = os.path.splitext(os.path.basename(ufw))
-                if ufw_name == fw_name:
-                    continue
-                ufwl = os.path.join(ufw, ufw_name)
-                cmd = os.path.join(os.path.dirname(__file__), "run-install-name-tool-change.sh") + " " + ufwl + " " + fw_name + " Frameworks/" + fw_name + " change"
-                f = os.popen(cmd)
-                for line in f:
-                    print(line)
-
-
-    def strip_debugging(self):
-        paths = self.list_copied_binaries()
-        for path in paths:
-            if path.endswith(".dylib") or path.endswith(".so"):
-                os.chmod(path, 0o644)
-                os.system("strip -x " + path + " 2>/dev/null")
-                os.chmod(path, 0o444)
-            else:
-                os.chmod(path, 0o755)
-                os.system("strip -ur " + path + " 2>/dev/null")
-                os.chmod(path, 0o555)
 
 #
 # If you want to sign your application, set $APPLICATION_CERT with the
@@ -397,19 +387,6 @@ class Bundler:
 # will sign every binary in the bundle with the certificate and the
 # bundle's id string.
 #
-    def sign_binaries(self):
-        if "APPLICATION_CERT" not in os.environ:
-            return
-        cert = os.getenv("APPLICATION_CERT")
-        paths = self.list_copied_binaries()
-        ident = self.project.get_bundle_id()
-        paths.sort(reverse=True)
-        for path in paths:
-            cmdargs = ['codesign', '-s', cert, '-i', ident, path]
-            result = os.spawnvp(os.P_WAIT, 'codesign', cmdargs)
-
-            if result:
-                raise OSError('"' + " ".join(cmdargs) + '" failed %d' % result)
 
     def copy_icon_themes(self):
         all_icons = set()
@@ -451,7 +428,7 @@ class Bundler:
         utils.makedirs(typelib_dest)
 
         for gir in self.project.get_gir():
-            self.binary_paths.extend(gir.copy_target(self.project, gir_dest,
+            self.binaries_to_copy.extend(gir.copy_target(self.project, gir_dest,
                                                      typelib_dest, lib_path))
 
     def run(self):
@@ -474,17 +451,19 @@ class Bundler:
         Path("${prefix}/lib/charset.alias").copy_target(self.project)
 
         # Main binary
-        path = self.project.get_main_binary()
-        source = self.project.evaluate_path(path.source)
+        main_binary_path = self.project.get_main_binary()
+        source = self.project.evaluate_path(main_binary_path.source)
         if not os.path.exists(source):
             print("Cannot find main binary: " + source)
             sys.exit(1)
 
-        dest = path.copy_target(self.project)
-        self.binary_paths.append(dest)
+        self.binaries_to_copy.append(main_binary_path)
+        self.binaries_to_copy.extend(self.project.get_binaries())
+        self.resolve_library_dependencies()
+        self.binaries_to_copy.remove(main_binary_path)
 
         # Additional binaries (executables, libraries, modules)
-        self.copy_binaries(self.project.get_binaries())
+        self.copy_binaries()
         self.resolve_library_dependencies()
 
         # Gir and Typelibs
@@ -509,12 +488,7 @@ class Bundler:
         self.create_gtk_immodules_setup()
         self.create_gdk_pixbuf_loaders_setup()
 
-        if self.meta.run_install_name_tool:
-            self.run_install_name_tool()
-
-        #self.strip_debugging()
-
-        self.sign_binaries()
+        main_binary_path.copy_target(self.project)
 
         # Launcher script, if necessary.
         launcher_script = self.project.get_launcher_script()
@@ -527,6 +501,7 @@ class Bundler:
                 result = os.spawnvp(os.P_WAIT, 'codesign', cmdargs)
                 if result:
                     raise OSError('"'+ " ".join(cmdargs) + '" failed %d' % result)
+
         if self.meta.overwrite:
             self.recursive_rm(final_path)
         shutil.move(self.project.get_bundle_path(), final_path)
