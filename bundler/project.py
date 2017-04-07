@@ -604,7 +604,7 @@ class Project:
 
         nodes = utils.node_get_elements_by_tag_name(self.root, "icon-theme")
         for node in nodes:
-            themes.append(Path.from_node(node))
+            themes.append(Path.from_node(node, False))
 
         # The hicolor theme is mandatory.
         if not [l for l in themes if l.name == "hicolor"]:
