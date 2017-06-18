@@ -28,6 +28,7 @@
     <string>10.4</string>
     <key>GtkOSXLaunchScriptFile</key>
     <string>gtk_launcher.py</string>
-
+    <key>NSHighResolutionCapable</key>
+    <true/>
 </dict>
 </plist>
