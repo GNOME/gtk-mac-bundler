@@ -492,13 +492,13 @@ class Bundler:
 # will sign every binary in the bundle with the certificate and the
 # bundle's id string.
 #
-        if "APPLICATION_CERT" in os.environ:
-            cert = os.environ["APPLICATION_CERT"]
-            ident = self.project.get_bundle_id()
-            cmdargs = ['codesign', '-s', cert, '-i', ident, "-f", path]
-            result = os.spawnvp(os.P_WAIT, 'codesign', cmdargs)
-            if result:
-                raise OSError('"'+ " ".join(cmdargs) + '" failed %d' % result)
+            if "APPLICATION_CERT" in os.environ:
+                cert = os.environ["APPLICATION_CERT"]
+                ident = self.project.get_bundle_id()
+                cmdargs = ['codesign', '-s', cert, '-i', ident, "-f", path]
+                result = os.spawnvp(os.P_WAIT, 'codesign', cmdargs)
+                if result:
+                    raise OSError('"'+ " ".join(cmdargs) + '" failed %d' % result)
 
         if self.meta.overwrite:
             self.recursive_rm(final_path)
