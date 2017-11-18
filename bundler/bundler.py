@@ -301,6 +301,8 @@ class Bundler:
         def relative_path_map(line):
             if not os.path.isabs(line):
                 for prefix in list(prefixes.values()):
+                    if line.startswith('@'):
+                        line = re.sub(r'@[-a-z]+/', '', line)
                     path = os.path.join(prefix, "lib", line)
                     if os.path.exists(path):
                         return path
