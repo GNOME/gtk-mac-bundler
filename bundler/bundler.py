@@ -1,3 +1,7 @@
+#from builtins import map
+#from builtins import filter
+#from past.builtins import basestring
+#from builtins import object
 import sys
 import os, errno, glob
 import shutil
@@ -7,7 +11,7 @@ from plistlib import Plist
 from .project import *
 from . import utils
 
-class Bundler:
+class Bundler(object):
     def __init__(self, project):
         self.project = project
 

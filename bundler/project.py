@@ -50,7 +50,7 @@ class Path(object):
         if node.tagName == "translations":
             name = node.getAttribute('name')
             if len(name) == 0:
-                raise "The tag 'translations' must have a 'name' property."
+                raise ValueError("The tag 'translations' must have a 'name' property.")
             return Translation(name, source, dest, recurse)
         if node.tagName == "gir":
             return GirFile(source, dest, recurse)
@@ -199,12 +199,12 @@ class Path(object):
         return dest
 
 # Used for anything that has a name and value.
-class Variable:
+class Variable(object):
     def __init__(self, node):
         self.name = node.getAttribute("name")
         self.value = utils.node_get_string(node)
 
-class Environment:
+class Environment(object):
     def __init__(self, node):
         self.runtime_variables = []
         self.scripts = []
@@ -218,7 +218,7 @@ class Environment:
             script = Path(utils.node_get_string(child), "${bundle}/Resources/Scripts")
             self.scripts.append(script)
 
-class Meta:
+class Meta(object):
     def __init__(self, node):
         self.prefixes = {}
 
@@ -357,7 +357,7 @@ class Translation(Path):
 
     def copy_target(self, project):
         if not self.name:
-            raise "No program name to tranlate!"
+            raise ValueError("No program name to tranlate!")
 
         def name_filter(filename):
             name, ext = os.path.splitext(os.path.split(filename)[1])
@@ -367,7 +367,7 @@ class Translation(Path):
 
         source = project.evaluate_path(self.source)
         if source == None:
-                raise "Failed to parse %s translation source!" % self.name
+                raise ValueError("Failed to parse %s translation source!" % self.name)
         prefix = project.get_prefix()
         for root, trees, files in os.walk(source):
             for file in filter(name_filter, files):
@@ -472,7 +472,7 @@ class IconTheme(Path):
 
 
 
-class Project:
+class Project(object):
     def __init__(self, project_path=None):
         if not os.path.isabs(project_path):
             project_path = os.path.join(os.getcwd(), project_path)
