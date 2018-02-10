@@ -87,18 +87,18 @@ set_python_path(void)
     CFStringRef str = make_filesystem_string(bundle_url);
     CFRelease(bundle_url);
     mstr = CFStringCreateMutableCopy(NULL, 5 * PATH_MAX, str);
-    CFStringAppendCString(mstr, "/lib/python36.zip:", kCFStringEncodingUTF8);
+    CFStringAppendCString(mstr, "/lib/python34.zip:", kCFStringEncodingUTF8);
     CFStringAppend(mstr, str);
-    CFStringAppendCString(mstr, "/lib/python3.6:",
+    CFStringAppendCString(mstr, "/lib/python3.4:",
 			  kCFStringEncodingUTF8);
     CFStringAppend(mstr, str);
-    CFStringAppendCString(mstr, "/lib/python3.6/plat-darwin:",
+    CFStringAppendCString(mstr, "/lib/python3.4/plat-darwin:",
 			  kCFStringEncodingUTF8);
     CFStringAppend(mstr, str);
-    CFStringAppendCString(mstr, "/lib/python3.6/lib-dynload:",
+    CFStringAppendCString(mstr, "/lib/python3.4/lib-dynload:",
 			  kCFStringEncodingUTF8);
     CFStringAppend(mstr, str);
-    CFStringAppendCString(mstr, "/lib/python3.6/site-packages",
+    CFStringAppendCString(mstr, "/lib/python3.4/site-packages",
 			  kCFStringEncodingUTF8);
     CFRelease(str);
     path = widen_cfstring(mstr);

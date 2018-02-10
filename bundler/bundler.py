@@ -170,6 +170,8 @@ class Bundler(object):
         prefix = "\"" + self.project.get_bundle_path("Contents/Resources")
 
         for line in f:
+            if sys.version_info[0] > 2:
+                line = line.decode('utf-8')
             line = line.strip()
             if line.startswith("#"):
                 continue
@@ -227,6 +229,8 @@ class Bundler(object):
 
         prefix = "\"" + self.project.get_bundle_path("Contents/Resources")
         for line in f:
+            if sys.version_info[0] > 2:
+                line = line.decode('utf-8')
             line = line.strip()
             if line.startswith("#"):
                 continue
@@ -251,7 +255,7 @@ class Bundler(object):
             if (path.compute_destination(self.project) in binaries):
                 continue
             copied_paths = path.copy_target(self.project)
-            if isinstance(copied_paths, basestring):
+            if isinstance(copied_paths, str):
                 print("Warning: copy_target returned string %s" % copied_paths)
                 copied_paths = [copied_paths]
             bad_paths = [p for p in copied_paths if (p.endswith('.la')
@@ -361,7 +365,13 @@ class Bundler(object):
             f = Popen(cmds, stdout=PIPE, stderr=PIPE)
             results, errors = f.communicate()
             if errors:
-                print("otool errors:\n%s" % errors)
+                if sys.version_info[0] > 2:
+                    print("otool errors:\n%s" % errors.decode("utf-8"))
+                else:
+                    print("otool errors:\n%s" % errors)
+
+            if sys.version_info[0] > 2:
+                results = results.decode("utf-8")
             prefixes = self.meta.prefixes
             lines = list(filter(prefix_filter,
                                 [line.strip() for line in results.splitlines()]))
