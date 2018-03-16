@@ -454,16 +454,16 @@ class Bundler:
         self.resolve_library_dependencies()
         self.binaries_to_copy.remove(main_binary_path)
 
+        # Data
+        for path in self.project.get_data():
+            path.copy_target(self.project)
+
         # Additional binaries (executables, libraries, modules)
         self.copy_binaries()
         self.resolve_library_dependencies()
 
         # Gir and Typelibs
         self.install_gir()
-
-        # Data
-        for path in self.project.get_data():
-            path.copy_target(self.project)
 
         # Translations
         self.copy_translations()
