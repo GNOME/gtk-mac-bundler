@@ -161,11 +161,20 @@ class Bundler(object):
         env_var = "GTK_EXE_PREFIX"
         exe_name = 'gtk-query-immodules-' + self.project.get_gtk_version()
         f = self.run_module_catalog(env_var, path, exe_name)
-
-        path = self.project.get_bundle_path("Contents/Resources/etc/",
-                                            self.project.get_gtk_dir())
+        if self.meta.gtk == 'gtk+-2.0':
+            path = self.project.get_bundle_path("Contents/Resources/etc/",
+                                                self.project.get_gtk_dir())
+            file = 'gtk.immodules'
+        else:
+            gtkdir = self.project.evaluate_path('${pkg:'+
+                                                self.meta.gtk +
+                                                ':gtk_binary_version}')
+            path = self.project.get_bundle_path("Contents/Resources/lib/",
+                                                self.project.get_gtk_dir(),
+                                                gtkdir)
+            file = 'immodules.cache'
         utils.makedirs(path)
-        fout = open(os.path.join(path, "gtk.immodules"), "w")
+        fout = open(os.path.join(path, file), "w")
 
         prefix = "\"" + self.project.get_bundle_path("Contents/Resources")
 
