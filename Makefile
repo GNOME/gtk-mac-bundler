@@ -2,7 +2,11 @@ PACKAGE = gtk-mac-bundler
 VERSION = 0.7.4
 OLD_VERSION = 0.7.3
 
-bindir=$(HOME)/.local/bin
+ifeq ($(JHBUILD_PREFIX),)
+JHBUILD_PREFIX := $($HOME/gtk/inst)
+endif
+
+bindir=$(JHBUILD_PREFIX)/bin
 
 all:
 	@echo 'Run "make install" to install.'
