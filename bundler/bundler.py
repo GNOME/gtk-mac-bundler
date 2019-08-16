@@ -7,7 +7,7 @@ import os, errno, glob
 import shutil
 import re
 from subprocess import Popen
-from plistlib import Plist
+import plistlib
 from .project import *
 from . import utils
 
@@ -18,7 +18,7 @@ class Bundler(object):
         self.project_dir = project.get_project_dir()
 
         plist_path = self.project.get_plist_path()
-        self.plist = Plist.fromFile(plist_path)
+        self.plist = plistlib.readPlist(plist_path)
 
         # List of paths that should be recursively searched for
         # binaries that are used to find library dependencies.
@@ -62,8 +62,8 @@ class Bundler(object):
         path = self.project.get_bundle_path("Contents", "PkgInfo")
         path = self.project.evaluate_path(path)
         f = open (path, "w")
-        f.write(self.plist.CFBundlePackageType)
-        f.write(self.plist.CFBundleSignature)
+        f.write(self.plist['CFBundlePackageType'])
+        f.write(self.plist['CFBundleSignature'])
         f.close()
 
     def copy_plist(self):

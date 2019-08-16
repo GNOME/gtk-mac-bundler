@@ -7,7 +7,7 @@ import shutil
 from subprocess import call, check_call, Popen, PIPE, STDOUT
 import xml.dom.minidom
 from xml.dom.minidom import Node
-from plistlib import Plist
+import plistlib
 from . import utils
 
 # Base class for anything that can be copied into a bundle with a
@@ -495,20 +495,20 @@ class Project(object):
 
         plist_path = self.get_plist_path()
         try:
-            plist = Plist.fromFile(plist_path)
+            plist = plistlib.readPlist(plist_path)
         except EnvironmentError as e:
             if e.errno == errno.ENOENT:
                 print("Info.plist file not found: " + plist_path)
                 sys.exit(1)
             else:
                 raise
-        self.name = plist.CFBundleExecutable
+        self.name = plist['CFBundleExecutable']
         if "CFBundleName" in plist:
-            self.bundle_name = plist.CFBundleName
+            self.bundle_name = plist['CFBundleName']
         else:
-            self.bundle_name = plist.CFBundleExecutable
+            self.bundle_name = plist['CFBundleExecutable']
 
-        self.bundle_id = plist.CFBundleIdentifier
+        self.bundle_id = plist['CFBundleIdentifier']
 
     """
      Replace ${env:?}, ${prefix}, ${prefix:?}, ${project}, ${gtk}, ${gtkdir},
