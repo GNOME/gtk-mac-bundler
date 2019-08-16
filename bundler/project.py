@@ -386,11 +386,11 @@ class GirFile(Path):
             path, fname = os.path.split(filename)
             name, ext = os.path.splitext(fname)
 
-            with open (filename, "r") as source:
+            with open (filename, "r", encoding="utf8") as source:
                 lines = source.readlines()
             gir_file = os.path.join(gir_dest, fname)
             typelib = os.path.join(typelib_dest, name + '.typelib')
-            with open (gir_file, "w") as target:
+            with open (gir_file, "w", encoding="utf8") as target:
                 for line in lines:
                     target.write(re.sub(lib_path, self.bundle_path, line))
             call(['g-ir-compiler', '--output=' + typelib, gir_file])
