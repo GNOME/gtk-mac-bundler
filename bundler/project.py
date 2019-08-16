@@ -392,7 +392,17 @@ class GirFile(Path):
             typelib = os.path.join(typelib_dest, name + '.typelib')
             with open (gir_file, "w", encoding="utf8") as target:
                 for line in lines:
-                    target.write(re.sub(lib_path, self.bundle_path, line))
+                    if re.match('\s*shared-library=', line):
+                        (new_line, subs) = re.subn(lib_path, self.bundle_path, line)
+                        if subs:
+                            target.write(new_line)
+                        else:
+                            (car, cadr, cddr) = re.split('"', line, 2)
+                            new_line = "".join([car, '"', os.path.join(self.bundle_path, cadr), '"'])
+                            target.write(new_line)
+                    else:
+                        target.write(line)
+
             call(['g-ir-compiler', '--output=' + typelib, gir_file])
             return typelib
 
