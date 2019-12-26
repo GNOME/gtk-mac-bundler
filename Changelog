@@ -110,7 +110,7 @@ Changes in O.5.4
  - Correct the version strings. (John Ralls)
  - Restore inadvertently-deleted run-install-name-tool tag to bundle files. (John Ralls)
  - Fix translation loop (John Ralls)
- - More descriptive error message for unkown file copying errors (John Ralls)
+ - More descriptive error message for unknown file copying errors (John Ralls)
  - Add an example pygtk bundle (John Ralls)
  - Write Package type into PkgInfo. (John Ralls)
  - Provide a (normally commented out) block which reports each binary file processed so that one can find out which error messages go with which file. (John Ralls)
