@@ -249,7 +249,7 @@ the results to the environment with `setenv()`.
 
 For script-based programs one must create a small executable program
 which prepares the interpreter, launches it, and points it at a
-startup script which configutres the environment. Such a program,
+startup script which configures the environment. Such a program,
 written in C, is provided in `examples/python-launcher.c`; a companion
 startup script, `gtk_launcher.py`, does the environment
 configuration. `python-launcher.c` should work as-is for most python
