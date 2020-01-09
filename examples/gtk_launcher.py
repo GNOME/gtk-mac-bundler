@@ -30,19 +30,14 @@ if int(platform.release().split('.')[0]) > 10:
                                             'gtk.immodules')
 
 os.environ['GI_TYPELIB_PATH'] = join(bundle_lib, 'girepository-1.0')
-os.environ['GVBINDIR'] = join(bundle_lib, 'graphviz')
-os.environ['ENCHANT_MODULE_PATH'] = join(bundle_lib, 'enchant')
 
 #Set $PYTHON to point inside the bundle
-PYVER = 'python3.4'
+PYVER = 'python3.6'
 sys.path.append(bundle_res)
 
-os.environ['GRAMPSDIR'] = join (bundle_lib, PYVER, 'site-packages', 'gramps')
-os.environ['GRAMPSI18N'] = join(bundle_data, 'locale')
-os.environ['GRAMPS_RESOURCES'] = bundle_data
 os.environ['USERPROFILE'] = os.environ['HOME']
 os.environ['APPDATA'] = join(os.environ['HOME'], 'Library', 'Application Support')
-print('System Path:\n','\n'.join(sys.path)) 
-import gramps.grampsapp as app
+# Replace my_app with the file or module with your main() function.
+import my_app as app
 app.main()
 
