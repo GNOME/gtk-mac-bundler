@@ -102,7 +102,7 @@ class Path(object):
             if e.errno == errno.ENOENT:
                 print("Warning, source file missing: " + source)
             elif e.errno in (errno.EEXIST, errno.EACCES):
-                print("Warning, path already exits: " + dest)
+                print("Warning, path already exists: " + dest)
             else:
                 raise EnvironmentError("Error %s when copying file: %s"
                                        % (str(e), source))

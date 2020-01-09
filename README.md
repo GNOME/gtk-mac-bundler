@@ -76,7 +76,7 @@ The simple example above works for small and simple applications, but
 often you will need to specify more data to copy in, or to have more
 detailed control over what is copied. 
 
-Here we go through in more depth how this can be acheived. Every file
+Here we go through in more depth how this can be achieved. Every file
 and directory to copy is specified with a source path, and an optional
 destination path. An example that copies an entire directory
 recursively, from the installation prefix:
@@ -174,7 +174,7 @@ The launcher script is used to setup the necessary environment for the
 application to work. If your application does this itself, you can
 leave it out. Many applications will work out of the box with the
 launcher script though. If no script is specified in the tag, a
-default one is used, that sets up the needed environent for most GTK+
+default one is used, that sets up the needed environment for most GTK+
 applications.
 
 Unsurprisingly, the main-binary tag specifies the executable to launch
@@ -217,7 +217,7 @@ in the last path component, for example:
       ${prefix}/lib/gtk/2.10.0/loaders/*.so
     </binary>
 
-An intereseting twist is that some libraries that are built as dylibs
+An interesting twist is that some libraries that are built as dylibs
 are used as loadable modules. Dlopen doesn't have a problem with this,
 it will cheerfully open either. The problem comes because unlike
 Linux, Mac OS X uses different file extensions and formats, so libtool
@@ -249,7 +249,7 @@ the results to the environment with `setenv()`.
 
 For script-based programs one must create a small executable program
 which prepares the interpreter, launches it, and points it at a
-startup script which configutres the environment. Such a program,
+startup script which configures the environment. Such a program,
 written in C, is provided in `examples/python-launcher.c`; a companion
 startup script, `gtk_launcher.py`, does the environment
 configuration. `python-launcher.c` should work as-is for most python
