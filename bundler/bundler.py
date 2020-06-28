@@ -507,23 +507,9 @@ class Bundler(object):
 
         main_binary_path.copy_target(self.project)
 
-        # Launcher script, if necessary.
         launcher_script = self.project.get_launcher_script()
         if launcher_script:
             path = launcher_script.copy_target(self.project)
-
-# If you want to sign your application, set $APPLICATION_CERT with the
-# appropriate certificate name in your default Keychain. This function
-# will sign every binary in the bundle with the certificate and the
-# bundle's id string.
-#
-            if "APPLICATION_CERT" in os.environ:
-                cert = os.environ["APPLICATION_CERT"]
-                ident = self.project.get_bundle_id()
-                cmdargs = ['codesign', '-s', cert, '-i', ident, "-f", path]
-                result = os.spawnvp(os.P_WAIT, 'codesign', cmdargs)
-                if result:
-                    raise OSError('"'+ " ".join(cmdargs) + '" failed %d' % result)
 
         if self.meta.overwrite:
             self.recursive_rm(final_path)

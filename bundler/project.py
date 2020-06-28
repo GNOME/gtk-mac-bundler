@@ -270,7 +270,7 @@ class Binary(Path):
         self.sign(project, dest)
         self.destinations.append(dest)
 
-    def copy_target(self, project):
+    def copy_target(self, project, log = False):
         self.destinations = []
         if os.path.isdir(self.compute_source_path(project)):
             source = self.source
@@ -305,8 +305,8 @@ class Binary(Path):
             return
         cert = os.getenv("APPLICATION_CERT")
         ident = project.get_bundle_id()
-        output = Popen(['codesign', '-s', cert, '-i',
-                        ident, target], stdout=PIPE, stderr=STDOUT)
+        output = Popen(['codesign', '-s', cert, '-i', ident, '--timestamp',
+                        '--options=runtime', target], stdout=PIPE, stderr=STDOUT)
         results = output.communicate()[0]
         if results:
             raise SystemError("Warning! Codesigning %s returned error %s."
@@ -606,7 +606,6 @@ class Project(object):
             else:
                 path.dest = "${bundle}/Contents/MacOS/${name}"
             return path
-
         return None
 
     def get_icon_themes(self):
