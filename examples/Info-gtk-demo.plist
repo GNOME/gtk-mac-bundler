@@ -7,9 +7,7 @@
     <key>CFBundleExecutable</key>
     <string>GtkDemo</string>
     <key>CFBundleGetInfoString</key>
-    <string>2.24.18, (C) 1997-2013 The GTK+ Team http://www.gtk.org</string>
-    <key>CFBundleIconFile</key>
-    <string>Giggle.icns</string>
+    <string>3.24.20, (C) 1997-2020 The GTK+ Team http://www.gtk.org</string>
     <key>CFBundleIdentifier</key>
     <string>org.gtk.demo</string>
     <key>CFBundleInfoDictionaryVersion</key>
@@ -17,17 +15,15 @@
     <key>CFBundlePackageType</key>
     <string>APPL</string>
     <key>CFBundleShortVersionString</key>
-    <string>2.24.18</string>
+    <string>3.24.20</string>
     <key>CFBundleSignature</key>
     <string>????</string>
     <key>CFBundleVersion</key>
-    <string>2.24.18</string>
+    <string>3.24.20</string>
     <key>NSHumanReadableCopyright</key>
-    <string>Copyright 1997 - 2013 The GTK+ Team, GNU General Public License.</string>
+    <string>Copyright 1997 - 2020 The GTK+ Team, GNU General Public License.</string>
     <key>LSMinimumSystemVersion</key>
-    <string>10.4</string>
-    <key>GtkOSXLaunchScriptFile</key>
-    <string>gtk_launcher.py</string>
+    <string>10.13</string>
     <key>NSHighResolutionCapable</key>
     <true/>
 </dict>
