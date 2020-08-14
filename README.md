@@ -18,7 +18,7 @@ module is built in to the Pango library, by using the configure flag:
 
 ## Setting up
 
-Run `make install`; this installs the script into `~/bin` folder. Make sure you
+Run `make install`; this installs the script into `~/.local/bin` folder. Make sure you
 have that directory in your `PATH`, or use the absolute path when starting
 the script.
 
