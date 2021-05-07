@@ -12,6 +12,21 @@
   </meta>
 
   <plist>${project}/Info.plist</plist>
+
+  <!-- macOS security often requires entitlements, see https://developer.apple.com/documentation/bundleresources/entitlements. They're applied to an application during code-signing. This optional key points to an entitlements plist. Apps using GObject Introspection will need it to contain at least
+
+  <?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+
+<plist version="1.0">
+  <dict>
+    <key>com.apple.security.cs.allow-unsigned-executable-memory</key><true/>
+  </dict>
+</plist>
+
+  -->
+  <entitlements>${project}/python-entitlements.plist</entitlements>
+
   <!-- Build gramps-launcher with:
           gcc -L$PREFIX/lib `python-config -\-cflags -\-ldflags` \
               -o $PREFIX/bin/gramps-launcher \

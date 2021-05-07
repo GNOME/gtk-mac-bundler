@@ -305,8 +305,13 @@ class Binary(Path):
             return
         cert = os.getenv("APPLICATION_CERT")
         ident = project.get_bundle_id()
-        output = Popen(['codesign', '-s', cert, '-i', ident, '--timestamp',
-                        '--options=runtime', target], stdout=PIPE, stderr=STDOUT)
+        args = ['codesign', '-s', cert, '-i', ident, '--timestamp',
+                '--options=runtime']
+        entfile = project.get_entitlements_path()
+        if entfile:
+            args.extend(['--entitlements', entfile])
+        args.append(target)
+        output = Popen(args, stdout=PIPE, stderr=STDOUT)
         results = output.communicate()[0]
         if results:
             raise SystemError("Warning! Codesigning %s returned error %s."
@@ -593,6 +598,12 @@ class Project(object):
         if not plist:
             raise Exception("The 'plist' tag is required")
         return  self.evaluate_path(utils.node_get_string(plist))
+
+    def get_entitlements_path(self):
+        entitlements = utils.node_get_element_by_tag_name(self.root, "entitlements")
+        if not entitlements:
+            return None
+        return self.evaluate_path(utils.node_get_string(entitlements))
 
     def get_launcher_script(self):
         node = utils.node_get_element_by_tag_name(self.root, "launcher-script")
