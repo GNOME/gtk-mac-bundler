@@ -484,6 +484,7 @@ class Bundler(object):
         # Additional binaries (executables, libraries, modules)
         self.copy_binaries()
         self.resolve_library_dependencies()
+        self.copy_binaries()
 
         # Gir and Typelibs
         self.install_gir()
