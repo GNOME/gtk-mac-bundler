@@ -482,7 +482,6 @@ class Bundler(object):
         self.binaries_to_copy.remove(main_binary_path)
 
         # Additional binaries (executables, libraries, modules)
-        self.copy_binaries()
         self.resolve_library_dependencies()
         self.copy_binaries()
 
