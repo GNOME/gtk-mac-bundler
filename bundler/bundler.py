@@ -357,7 +357,8 @@ class Bundler(object):
                         dir, pattern = os.path.split(source)
                         for root, dirs, files in os.walk(dir):
                             for item in glob.glob(os.path.join(root, pattern)):
-                                binaries.append(os.path.join(root, item))
+                                if os.path.isfile(os.path.join(root, item)):
+                                    binaries.append(os.path.join(root, item))
                     elif os.path.isdir(source):
                         for root, dirs, files in os.walk(source):
                             for item in glob.glob(os.path.join(root, '*.so')):
@@ -481,8 +482,8 @@ class Bundler(object):
         self.binaries_to_copy.remove(main_binary_path)
 
         # Additional binaries (executables, libraries, modules)
-        self.copy_binaries()
         self.resolve_library_dependencies()
+        self.copy_binaries()
 
         # Gir and Typelibs
         self.install_gir()
