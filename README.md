@@ -18,10 +18,11 @@ module is built in to the Pango library, by using the configure flag:
 
 ## Setting up
 
-Run `make install`; this installs the script into `~/bin` folder. Make sure you
-have that directory in your `PATH`, or use the absolute path when starting
-the script.
-
+Run `make install`; this installs the script into $HOME/.local/bin by
+default. You can set BINDIR in the environment to point somewhere
+else, e.g. `BINDIR="$HOME/.new_local/bin" make install` will put it in
+$HOME/.new_local/bin. Make sure you have that directory in your
+`PATH`, or use the absolute path when starting the script.
 
 ## Prerequisites
 
