@@ -2,17 +2,15 @@ PACKAGE = gtk-mac-bundler
 VERSION = 0.7.4
 OLD_VERSION = 0.7.3
 
-if test "x$(BINDIR)" == "x"; then \
-  BINDIR="$(HOME)/.local/bin"; \
-fi
+bindir=$(HOME)/.local/bin
 
 all:
 	@echo 'Run "make install" to install.'
 
 install:
-	@mkdir -p $(BINDIR)
-	@SED "s,@PATH@,`pwd`,g" < gtk-mac-bundler.in > $(BINDIR)/gtk-mac-bundler
-	@chmod a+x $(BINDIR)/gtk-mac-bundler
+	@mkdir -p $(bindir)
+	@sed "s,@PATH@,`pwd`,g" < gtk-mac-bundler.in > $(bindir)/gtk-mac-bundler
+	@chmod a+x $(bindir)/gtk-mac-bundler
 
 distdir = $(PACKAGE)-$(VERSION)
 dist:
