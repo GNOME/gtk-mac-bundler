@@ -117,7 +117,8 @@ class Path(object):
                 continue
             utils.makedirs(destdir)
             for globbed_source in glob_list:
-                self.copy_file(project, globbed_source, destdir)
+                if os.path.isfile(globbed_source):
+                    self.copy_file(project, globbed_source, destdir)
 
     def copy_target_recursive(self, project, source, dest):
         for root, dirs, files in os.walk(source):
