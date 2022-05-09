@@ -296,8 +296,11 @@ class Binary(Path):
                            "run-install-name-tool-change.sh")
         for prefix in project.get_meta().prefixes:
             prefix_path = project.get_prefix(prefix)
+            bundle_libdir = os.path.join(self.bundledir, 'lib')
             call([cmd, target, prefix_path, self.bundledir, "change"])
             call([cmd, target, prefix_path, self.bundledir, "id"])
+            call([cmd, target, '@rpath', bundle_libdir, "change"])
+            call([cmd, target, '@rpath', bundle_libdir, "id"])
             for fw in frameworks:
                 call([cmd, path, fw.get_name(), fw.get_bundlename(), 'change'])
 
