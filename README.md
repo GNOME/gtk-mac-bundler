@@ -168,14 +168,17 @@ app bundle to be complete:
     
     <main-binary>${prefix}/bin/giggle</main-binary>
 
-The file `Info.plist` is the standard Mac OS file for bundles. See [documentation](https://developer.apple.com/library/content/documentation/General/Reference/InfoPlistKeyReference/Introduction/Introduction.html) on those.
+The file `Info.plist` is the standard Mac OS file for bundles. See
+[documentation](https://developer.apple.com/library/content/documentation/General/Reference/InfoPlistKeyReference/Introduction/Introduction.html)
+on those.
 
-The launcher script is used to setup the necessary environment for the
-application to work. If your application does this itself, you can
-leave it out. Many applications will work out of the box with the
-launcher script though. If no script is specified in the tag, a
-default one is used, that sets up the needed environment for most GTK+
-applications.
+The launcher script may be used to setup the necessary environment for
+the application to work, but see the section on Code Signing below: A
+compiled executable is genererally necessary instead. An example
+launcher script for Gtk3 based applications is in the examples
+directory; there's also a python-launcher.c program there that can be
+compiled to supply the executable for a Gtk3 application written in
+Python.
 
 Unsurprisingly, the main-binary tag specifies the executable to launch
 when starting the application.
