@@ -1,4 +1,7 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
+if __name__ == "__main__" and __package__ is None:
+    __package__ = "bundler"
+
 import unittest
 import os
 from .project_test import Project_Test
