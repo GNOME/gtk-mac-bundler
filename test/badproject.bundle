@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <app-bundle>
-  <metafoo>
+  <meta>
     <prefix>/usr/local/gtk</prefix>
     <run-install-name-tool/>
     <image>foo-version.dmg</image>
-  </metafoo>
-  <no-plist>${project}/test.plist</no-plist>
-  <no-binary>${prefix}testbin</no-binary>
+  </meta>
+  <plist>${project}/test.plist</plist>
+  <binary>${prefix}testbin</binary>
   <binary>
     ${prefix}/lib/gtk-2.0/${pkg:gtk+-2.0:gtk_binary_version}/loaders/*.so
   </binary>
