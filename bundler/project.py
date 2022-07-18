@@ -616,9 +616,11 @@ class Project(object):
             path = Path.from_node(node, False)
             if not path.source:
                 # Use the default launcher.
-                launcher = os.path.join(os.path.dirname(__file__),
-                                        "launcher.sh")
-                path = Path(launcher, "${bundle}/Contents/MacOS/${name}")
+                launcher = os.path.join(self.project_path, "launcher.sh")
+                if os.path.exists(launcher):
+                    path = Path(launcher, "${bundle}/Contents/MacOS/${name}")
+                else:
+                    raise Exception("Empty launcher tag but no launcher.sh")
             else:
                 path.dest = "${bundle}/Contents/MacOS/${name}"
             return path
