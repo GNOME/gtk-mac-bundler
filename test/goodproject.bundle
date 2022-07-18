@@ -5,6 +5,10 @@
     <prefix name="alt">/usr/local/gtk</prefix>
     <run-install-name-tool/>
     <image>foo-version.dmg</image>
+    <launcher-script>
+      ${project}/launcher.sh
+    </launcher-script>
+    <gtk>gtk+-3.0</gtk>
   </meta>
   <plist>${project}/test.plist</plist>
   <environment>

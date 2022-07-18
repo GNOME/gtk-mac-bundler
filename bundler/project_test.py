@@ -118,12 +118,15 @@ class Project_Test(unittest.TestCase):
                              "Prefix path evaluation failed %s" % path)
 
     def test_i_get_launcher_script(self):
-        path = self.goodproject.get_launcher_script()
-        self.failUnlessEqual(path.source, 
-                    os.path.join(os.path.dirname(__file__), "launcher.sh"),
-                    "Bad launcher source")
-        self.failUnlessEqual(path.dest, "${bundle}/Contents/MacOS/${name}",
-                    "Bad launcher destination")
+        launcher_path = self.goodproject.get_launcher_script()
+        proj_dir = self.goodproject.get_project_dir();
+        path = self.goodproject.evaluate_path(launcher_path.source)
+        self.failUnlessEqual(path,
+                             os.path.join(proj_dir, "launcher.sh"),
+                             "Bad launcher source")
+        self.failUnlessEqual(launcher_path.dest,
+                             "${bundle}/Contents/MacOS/${name}",
+                             "Bad launcher destination")
 
     def test_j_get_icon_themes(self):
         themes = self.goodproject.get_icon_themes()
