@@ -28,8 +28,8 @@
   <binary>
     ${prefix}/lib/libfoo*
   </binary>
-  <framework>
-    /System/Library/Carbon.framework
+  <framework dest="${bundle}/Contents/Frameworks">
+    /System/Library/Frameworks/Carbon.framework
   </framework>
   <data>
     ${prefix}/share/themes
