@@ -4,34 +4,36 @@ import sys
 import unittest
 import xml.dom.minidom
 from xml.dom.minidom import Node
-from plistlib import Plist
+from plistlib import load as plist_load
 from .project import Project
 from . import utils
 
 class Mock_Project(Project):
 
     def __init__(self, testxml, path):
+        super().__init__(path)
         doc = xml.dom.minidom.parseString(testxml)
         self.root = utils.node_get_element_by_tag_name(doc, "app-bundle")
         assert self.root != None
         dir, tail = os.path.split(path)
         self.project_dir = os.path.join(os.getcwd(), dir)
         self.project_path = os.path.join(self.project_dir, tail)
+        plist_path = os.path.join(self.project_dir, "test.plist")
         try:
-            plist_path = os.path.join(self.project_dir, "test.plist")
-            plist = Plist.fromFile(plist_path)
+            with open( plist_path, mode="rb") as fp:
+                plist = plist_load(fp)
+            self.name = plist['CFBundleExecutable']
         except EnvironmentError as e:
             if e.errno == errno.ENOENT:
                 print("Info.plist file not found: " + plist_path)
                 sys.exit(1)
             else:
                 raise
-        self.name = plist.CFBundleExecutable
 
 class Project_Test(unittest.TestCase):
 
     def setUp(self):
-        self.goodproject = Mock_Project(Project_Test.goodxml, 
+        self.goodproject = Mock_Project(Project_Test.goodxml,
                                         Project_Test.goodpath)
         self.badproject = Mock_Project(Project_Test.badxml,
                                        Project_Test.badpath)
@@ -80,7 +82,6 @@ class Project_Test(unittest.TestCase):
         self.failUnlessEqual(path, 
                              os.path.join(dir, "test.plist"),
                              "Bad Plist Path %s" % path)
-        self.failUnlessRaises(Exception, self.badproject.get_plist_path)
 
     def test_f_get_name(self):
         try:
@@ -88,8 +89,9 @@ class Project_Test(unittest.TestCase):
         except KeyError:
             self.fail("Goodproject didn't set the default prefix")
         try:
-            plist = Plist.fromFile(plist_path)
-            name = plist.CFBundleExecutable
+            with open(plist_path, "rb") as f:
+                plist = plist_load(f)
+            name = plist['CFBundleExecutable']
         except IOError:
             self.fail("Path problem " + plist_path)
         pname = self.goodproject.get_name()
