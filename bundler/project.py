@@ -506,12 +506,12 @@ class Project(object):
             except:
                 print("Could not load project %s:" % (project_path))
                 raise
-
+        if not self.root:
+            raise Exception("Unable to load the root node.")
         # The directory the project file is in (as opposed to
         # project_path which is the path including the filename).
         self.project_dir, tail = os.path.split(project_path)
         self.meta = self.get_meta()
-
         plist_path = self.get_plist_path()
         try:
             with open(plist_path, "rb") as f:
