@@ -70,6 +70,8 @@ def node_get_elements_by_tag_name(node, name):
         return []
 
 def node_get_element_by_tag_name(node, name):
+    if not node:
+        raise Exception("Can't get an element without a parent.")
     try:
         (data,) = node.getElementsByTagName(name)
         return data
