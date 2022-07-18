@@ -475,11 +475,6 @@ class IconTheme(Path):
                 if head in used_icons or self.icons == IconTheme.ICONS_ALL:
                     path = os.path.join(root, f)
 
-                    # Note: Skipping svgs for now, they are really
-                    # big and not really used.
-                    if path.endswith(".svg"):
-                        continue
-
                     # Replace the real paths with the prefix macro
                     # so we can use copy_target.
                     Path("${prefix}" + path[len(prefix):]).copy_target(project)

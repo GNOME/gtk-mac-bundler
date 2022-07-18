@@ -292,8 +292,8 @@ class Bundler(object):
                     print ("Recursing down copied binary path %s." % path)
                     for root, dirs, files in os.walk(path):
                         paths.extend([os.path.join(root, l) for l in files])
-                    else:
-                        paths.append(path)
+                else:
+                    paths.append(path)
             except TypeError as err:
                 if isinstance(path, Path):
                     print("Warning, Path object for %s in copied binaries list."
@@ -320,7 +320,7 @@ class Bundler(object):
             if not os.path.isabs(line):
                 for prefix in list(prefixes.values()):
                     if line.startswith('@'):
-                        line = re.sub(r'@[-a-z]+/', '', line)
+                        line = re.sub(r'@[-_a-z]+/', '', line)
                     path = os.path.join(prefix, "lib", line)
                     if os.path.exists(path):
                         return path
