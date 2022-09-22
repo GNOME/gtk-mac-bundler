@@ -6,6 +6,7 @@ import sys
 import os, errno, glob
 import shutil
 import re
+import subprocess
 from subprocess import Popen
 import plistlib
 from .project import *
@@ -420,8 +421,8 @@ class Bundler(object):
 
         # Get strings from binaries.
         for f in self.list_copied_binaries():
-            p = os.popen("strings " + f)
-            for string in p:
+            p = subprocess.run("strings " + f, shell=True, stdout=subprocess.PIPE, text=True, errors='ignore')
+            for string in p.stdout.splitlines():
                 string = string.strip()
                 strings.add(string)
 
