@@ -29,7 +29,7 @@
 
   <!-- Build gramps-launcher with:
           gcc -L$PREFIX/lib `python-config -\-cflags -\-ldflags` \
-              -o $PREFIX/bin/gramps-launcher \
+              -o $PREFIX/bin/python-launcher \
 	      path/to/gtk-mac-bundler/examples/python-launcher.c
        with the obvious substitution.
   -->
