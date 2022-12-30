@@ -137,32 +137,24 @@ class Project_Test(unittest.TestCase):
         self.failUnlessEqual(themes[-1].name, "hicolor", 
                              "No hicolor theme %s" % themes[-1].name)
 
-    def test_k_get_environment(self):
-        env = self.goodproject.get_environment()
-        self.failUnlessEqual(len(env.runtime_variables), 2, 
-                         "Wrong number of runtime variables %d" % 
-                             len(env.runtime_variables))
-        self.failUnlessEqual(len(env.scripts), 2, 
-                             "Wrong number of scripts %d" % len(env.scripts))
-
-    def test_l_get_frameworks(self):
+    def test_k_get_frameworks(self):
         fw = self.goodproject.get_frameworks()
         self.failUnlessEqual(len(fw), 1, 
                              "Wrong number of frameworks %d" % len(fw))
 
-    def test_m_get_main_binary(self):
+    def test_l_get_main_binary(self):
         bin = self.goodproject.get_main_binary()
         self.failUnlessEqual(bin.source, "${prefix}/bin/foo-source", 
                          "Bad binary source %s" % bin.source)
         self.failUnlessEqual(bin.dest, "${bundle}/Contents/MacOS/${name}-bin", 
                     "Bad binary destination %s" % bin.dest)
 
-    def test_n_get_binaries(self):
+    def test_m_get_binaries(self):
         bin = self.goodproject.get_binaries()
         self.failUnlessEqual(len(bin), 2, 
                              "Wrong number of binaries %d" % len(bin))
 
-    def test_o_get_data(self):
+    def test_n_get_data(self):
         data = self.goodproject.get_data()
         self.failUnlessEqual(len(data), 3, 
                              "Wrong number of data paths %d" % len(data))
@@ -170,7 +162,7 @@ class Project_Test(unittest.TestCase):
                              "${bundle}/Contents/Resources/etc/gtk-2.0/gtkrc", 
                              "Data[2] Destination %s" % data[2].dest)
 
-    def test_p_get_translations(self):
+    def test_o_get_translations(self):
         trans = self.goodproject.get_translations()
         self.failUnlessEqual(len(trans), 1, 
                              "Wrong number of translations %d" % len(trans))

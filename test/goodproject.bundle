@@ -11,20 +11,6 @@
     <gtk>gtk+-3.0</gtk>
   </meta>
   <plist>${project}/test.plist</plist>
-  <environment>
-    <runtime-variable>
-      PATH=/usr/bin:/bin
-    </runtime-variable>
-    <runtime-variable>
-      PKG_CONFIG_PATH=${env:PREFIX}/lib/pkgconfig
-    </runtime-variable>
-    <script>
-      ${prefix}/bin/foo.sh
-    </script>
-    <script>
-      ${project}/bar.sh
-    </script>
-  </environment>
   <main-binary>${prefix}/bin/foo-source</main-binary>
   <binary>
     ${prefix}/lib/gtk-2.0/${pkg:gtk+-2.0:gtk_binary_version}/loaders/*.so

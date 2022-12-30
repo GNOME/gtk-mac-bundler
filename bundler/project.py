@@ -205,20 +205,6 @@ class Variable(object):
         self.name = node.getAttribute("name")
         self.value = utils.node_get_string(node)
 
-class Environment(object):
-    def __init__(self, node):
-        self.runtime_variables = []
-        self.scripts = []
-
-        variables = utils.node_get_elements_by_tag_name(node, "runtime-variable")
-        for child in variables:
-            self.runtime_variables.append(Variable(child))
-
-        scripts = utils.node_get_elements_by_tag_name(node, "script")
-        for child in scripts:
-            script = Path(utils.node_get_string(child), "${bundle}/Resources/Scripts")
-            self.scripts.append(script)
-
 class Meta(object):
     def __init__(self, node):
         self.prefixes = {}
@@ -650,10 +636,6 @@ class Project(object):
         else:
             return "gtk-2.0"
 
-    def get_environment(self):
-        node = utils.node_get_element_by_tag_name(self.root, "environment")
-        return Environment(node)
-
     def get_frameworks(self):
         frameworks = []
         nodes = utils.node_get_elements_by_tag_name(self.root, "framework")
@@ -714,13 +696,6 @@ if __name__ == '__main__':
     print("  App name: %s" % (project.name))
     print("  Destination: %s" % (project.get_meta().dest))
     print("  Overwrite: %s" % (str(project.get_meta().overwrite)))
-
-    environment = project.get_environment()
-    print("Environment:")
-    for variable in environment.runtime_variables:
-        print("  %s=%s" % (variable.name, variable.value))
-    for script in environment.scripts:
-        print("  %s => %s" % (script.source, script.dest))
 
     print("Frameworks:")
     for framework in project.get_frameworks():
