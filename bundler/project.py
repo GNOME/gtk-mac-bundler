@@ -589,7 +589,7 @@ class Project(object):
 
     def get_bundle_path(self, *args):
         dest = self.get_meta().dest
-        bundle_path = os.path.join(dest, "." + self.get_name() + ".app")
+        bundle_path = os.path.join(dest, "." + self.get_bundle_name() + ".app")
         bundle_path = self.evaluate_path(bundle_path, False)
         return os.path.join(bundle_path, *args)
 
