@@ -78,12 +78,12 @@ unset APPLELANGUAGES L
 
 # If we didn't get a language from the language list, try the Collation preference, in case it's the only setting that exists.
 APPLECOLLATION=`defaults read .GlobalPreferences AppleCollationOrder`
-if test -z ${LANG} -a -n $APPLECOLLATION; then
+if test -z ${LANG} && test -n $APPLECOLLATION; then
     if test -f "$I18NDIR/${APPLECOLLATION:0:2}/LC_MESSAGES/$APP.mo"; then
         export LANG=${APPLECOLLATION:0:2}
     fi
 fi
-if test ! -z $APPLECOLLATION; then
+if test -n $APPLECOLLATION; then
     export LC_COLLATE=$APPLECOLLATION
 fi
 unset APPLECOLLATION
@@ -96,7 +96,7 @@ if test -f "$I18NDIR/${APPLELOCALE:0:5}/LC_MESSAGES/$APP.mo"; then
         export LANG="${APPLELOCALE:0:5}"
     fi
 
-elif test -z $LANG -a -f "$I18NDIR/${APPLELOCALE:0:2}/LC_MESSAGES/$APP.mo"; then
+elif test -z $LANG && test -f "$I18NDIR/${APPLELOCALE:0:2}/LC_MESSAGES/$APP.mo"; then
     export LANG="${APPLELOCALE:0:2}"
 fi
 
@@ -108,11 +108,11 @@ if test -n $LANG; then
     # If the language code matches the applelocale, then that's the message
     # locale; otherwise, if it's longer than two characters, then it's
     # probably a good message locale and we'll go with it.
-    if test $LANG == ${APPLELOCALE:0:5} -o $LANG != ${LANG:0:2}; then
+    if test $LANG == ${APPLELOCALE:0:5} || test $LANG != ${LANG:0:2}; then
         export LC_MESSAGES=$LANG
 # Next try if the Applelocale is longer than 2 chars and the language
 # bit matches $LANG
-    elif test $LANG == ${APPLELOCALE:0:2} -a $APPLELOCALE > ${APPLELOCALE:0:2}; then
+    elif test $LANG == ${APPLELOCALE:0:2} && test $APPLELOCALE > ${APPLELOCALE:0:2}; then
         export LC_MESSAGES=${APPLELOCALE:0:5}
     # Fail. Get a list of the locales in $PREFIX/share/locale that match
     # our two letter language code and pick the first one, special casing
@@ -131,12 +131,12 @@ else
     export LC_MESSAGES="en_US"
 fi
 CURRENCY=`echo $APPLELOCALE |  sed -En 's/.*currency=([[:alpha:]]+).*/\1/p'`
-if test "x$CURRENCY" != "x"; then
+if test -n "$CURRENCY"; then
    # The user has set a special currency. Gtk doesn't install
    # LC_MONETARY files, but Apple does in /usr/share/locale, so we're
    # going to look there for a locale to set LC_CURRENCY to.
     if test -f /usr/local/share/$LC_MESSAGES/LC_MONETARY; then
-        if test -a `cat /usr/local/share/$LC_MESSAGES/LC_MONETARY` == $CURRENCY; then
+        if test `cat /usr/local/share/$LC_MESSAGES/LC_MONETARY` == $CURRENCY; then
             export LC_MONETARY=$LC_MESSAGES
         fi
     fi
