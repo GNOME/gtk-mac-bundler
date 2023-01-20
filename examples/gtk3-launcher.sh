@@ -114,13 +114,13 @@ if test -n $LANG; then
 # bit matches $LANG
     elif test $LANG == ${APPLELOCALE:0:2} && test $APPLELOCALE > ${APPLELOCALE:0:2}; then
         export LC_MESSAGES=${APPLELOCALE:0:5}
-    # Fail. Get a list of the locales in $PREFIX/share/locale that match
+    # Fail. Get a list of the locales in $I18DIR that match
     # our two letter language code and pick the first one, special casing
     # english to set en_US
     elif test $LANG == "en"; then
         export LC_MESSAGES="en_US"
     else
-        LOC=`find $PREFIX/share/locale -name $LANG???`
+        LOC=`find $I18DIR -name $LANG???`
         for L in $LOC; do
             export LC_MESSAGES=$L
         done
