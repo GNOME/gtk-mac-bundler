@@ -552,7 +552,11 @@ class Project(object):
         path = utils.evaluate_environment_variables(path)
         path = utils.evaluate_pkgconfig_variables(path)
 
-        return os.path.normpath(path)
+        [dirname, basename] = os.path.split(path)
+        if not basename:
+            return os.path.join(os.path.normpath(dirname), basename)
+        else:
+            return os.path.normpath(path)
 
     def get_name(self):
         return self.name
