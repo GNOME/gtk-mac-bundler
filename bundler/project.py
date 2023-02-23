@@ -338,7 +338,7 @@ class Framework(Binary):
         dest = self.compute_desitnation(project)
         cmd = os.path.join(os.path.dirname(__file__),
                            "run-install-name-tool-change.sh")
-        check_all([cmd, dest, self.get_name(), self.bundledir, 'id'])
+        check_call([cmd, dest, self.get_name(), self.bundledir, 'id'])
         for dep in frameworks:
             if dep == self:
                 continue
