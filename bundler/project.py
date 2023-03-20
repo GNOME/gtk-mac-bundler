@@ -6,7 +6,6 @@ import glob
 import shutil
 from subprocess import call, check_call, Popen, PIPE, STDOUT
 import xml.dom.minidom
-from xml.dom.minidom import Node
 import plistlib
 from . import utils
 
@@ -156,7 +155,7 @@ class Path(object):
         # If the destination has a wildcard as last component (copied
         # from the source in dest-less paths), ignore the tail.
         (dest_parent, dest_tail) = os.path.split(dest)
-        p = re.compile("[\*\?]")
+        p = re.compile("[*?]")
         if p.search(dest_tail):
             dest = dest_parent
 
@@ -164,7 +163,7 @@ class Path(object):
         return dest
 
     def is_source_glob(self):
-        p = re.compile("[\*\?]")
+        p = re.compile("[*?]")
         (source_parent, source_tail) = os.path.split(self.source)
         if p.search(source_tail):
             return True
@@ -173,7 +172,7 @@ class Path(object):
     def compute_source_path(self, project):
         source = project.evaluate_path(self.source)
         # Check that the source only has wildcards in the last component.
-        p = re.compile("[\*\?]")
+        p = re.compile("[*?]")
         (source_parent, source_tail) = os.path.split(source)
         if p.search(source_parent):
             raise ValueError("Can't have wildcards except in the last path "
@@ -288,7 +287,7 @@ class Binary(Path):
             call([cmd, target, '@rpath', bundle_libdir, "change"])
             call([cmd, target, '@rpath', bundle_libdir, "id"])
             for fw in frameworks:
-                call([cmd, path, fw.get_name(), fw.get_bundlename(), 'change'])
+                fw.fix_rpaths(project, fw, frameworks)
 
     def sign(self, project, target):
         if "APPLICATION_CERT" not in os.environ:
@@ -309,7 +308,7 @@ class Binary(Path):
 
     def strip_debugging(self, target):
         if target.endswith(".dylib") or target.endswith(".so"):
-            os.chmod(path, 0o644)
+            os.chmod(os.path.dirname(target), 0o644)
             os.system("strip -x " + target + " 2>/dev/null")
             os.chmod(target, 0o444)
         else:
@@ -322,7 +321,7 @@ class Framework(Binary):
     def __init__(self, source, recurse):
         (head, tail) = os.path.split(source)
         dest = "${bundle}/Contents/Frameworks/" + tail
-        super(Framework, self).__init__(source, dest, recurse);
+        super(Framework, self).__init__(source, dest, recurse)
         self.bundledir = "Frameworks"
 
     def get_name(self):
@@ -332,10 +331,10 @@ class Framework(Binary):
     def get_bundle_name(self):
         return os.path.join(self.bundledir, self.get_name())
 
-    def fix_rpaths(self, project, frameworks):
+    def fix_rpaths(self, project, target, frameworks):
         if not project.get_meta().run_install_name_tool:
             return
-        dest = self.compute_desitnation(project)
+        dest = self.compute_destination(project)
         cmd = os.path.join(os.path.dirname(__file__),
                            "run-install-name-tool-change.sh")
         check_call([cmd, dest, self.get_name(), self.bundledir, 'id'])
@@ -375,7 +374,7 @@ class GirFile(Path):
         super(GirFile, self).__init__(sourcepath, destpath, recurse)
         self.bundle_path = '@executable_path/../Resources/lib'
 
-    def copy_target(self, project, gir_dest, typelib_dest, lib_path):
+    def copy_girfile(self, project, gir_dest, typelib_dest, lib_path):
 
         def transform_file(filename):
             path, fname = os.path.split(filename)
@@ -423,7 +422,7 @@ class IconTheme(Path):
             self.icons = IconTheme.ICONS_ALL
         elif icons == "none":
             self.icons = IconTheme.ICONS_NONE
-        elif icons == "auto" or len(string) == 0:
+        elif icons == "auto" or len(icons) == 0:
             self.icons = IconTheme.ICONS_AUTO
         else:
             self.icons = IconTheme.ICONS_ALL

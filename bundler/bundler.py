@@ -1,14 +1,4 @@
-#from builtins import map
-#from builtins import filter
-#from past.builtins import basestring
-#from builtins import object
-import sys
-import os, errno, glob
-import shutil
-import re
-import subprocess
-from subprocess import Popen
-import plistlib
+from subprocess import PIPE, Popen, run
 from .project import *
 from . import utils
 
@@ -414,14 +404,14 @@ class Bundler(object):
         themes = self.project.get_icon_themes()
 
         for theme in themes:
-            theme.copy_target
+            theme.copy_target(self.project)
             all_icons |= theme.enumerate_icons(self.project)
 
         strings = set()
 
         # Get strings from binaries.
         for f in self.list_copied_binaries():
-            p = subprocess.run("strings " + f, shell=True, stdout=subprocess.PIPE, text=True, errors='ignore')
+            p = run("strings " + f, shell=True, stdout=PIPE, text=True, errors='ignore')
             for string in p.stdout.splitlines():
                 string = string.strip()
                 strings.add(string)
@@ -448,8 +438,8 @@ class Bundler(object):
         utils.makedirs(typelib_dest)
 
         for gir in self.project.get_gir():
-            self.binaries_to_copy.extend(gir.copy_target(self.project, gir_dest,
-                                                     typelib_dest, lib_path))
+            self.binaries_to_copy.extend(gir.copy_girfile(self.project, gir_dest,
+                                                          typelib_dest, lib_path))
 
     def run(self):
         # Remove the temp location forcefully.
