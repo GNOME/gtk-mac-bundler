@@ -23,7 +23,7 @@ if [ "x$ACTION" = "xchange" ]; then
 elif [ "x$ACTION" = "xid" ]; then
 #    echo "$LIBRARY $WRONG_PREFIX to $RIGHT_PREFIX"
     lib=$(otool -D "$LIBRARY" 2>/dev/null | grep ^"$WRONG_PREFIX" | sed s,"$WRONG_PREFIX",,)
-    if [ $lib ]; then
+    if [ -n "$lib" ]; then
 #        echo "Rewrite $lib"
         install_name_tool -id "${RIGHT_PREFIX}/${lib}" $LIBRARY;
 #    else
