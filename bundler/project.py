@@ -270,7 +270,7 @@ class Binary(Path):
             super(Binary, self).copy_target(project)
         return self.destinations
 
-    def fix_rpaths(self, project, target, frameworks = []):
+    def fix_rpaths(self, project, target, frameworks = None):
         if not project.get_meta().run_install_name_tool:
             return
         # Byte compiled scheme and python files don't have rpaths.
@@ -331,7 +331,7 @@ class Framework(Binary):
     def get_bundle_name(self):
         return os.path.join(self.bundledir, self.get_name())
 
-    def fix_rpaths(self, project, target, frameworks):
+    def fix_rpaths(self, project, target, frameworks = None):
         if not project.get_meta().run_install_name_tool:
             return
         dest = self.compute_destination(project)
