@@ -286,8 +286,9 @@ class Binary(Path):
             call([cmd, target, prefix_path, self.bundledir, "id"])
             call([cmd, target, '@rpath', bundle_libdir, "change"])
             call([cmd, target, '@rpath', bundle_libdir, "id"])
-            for fw in frameworks:
-                fw.fix_rpaths(project, fw, frameworks)
+            if hasattr(frameworks, '__iter__'):
+                for fw in frameworks:
+                    fw.fix_rpaths(project, fw, frameworks)
 
     def sign(self, project, target):
         if "APPLICATION_CERT" not in os.environ:
@@ -338,11 +339,12 @@ class Framework(Binary):
         cmd = os.path.join(os.path.dirname(__file__),
                            "run-install-name-tool-change.sh")
         check_call([cmd, dest, self.get_name(), self.bundledir, 'id'])
-        for dep in frameworks:
-            if dep == self:
-                continue
-            check_call([cmd, dest, dep.get_name(),
-                        dep.get_bundle_name(), 'change'])
+        if hasattr(frameworks, '__iter__'):
+            for dep in frameworks:
+                if dep == self:
+                    continue
+                check_call([cmd, dest, dep.get_name(),
+                            dep.get_bundle_name(), 'change'])
 
 class Translation(Path):
     def __init__(self, name, sourcepath, destpath, recurse):
