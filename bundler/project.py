@@ -35,16 +35,13 @@ class Path():
         recurse = node.getAttribute("recurse")
         if len(dest) == 0:
             dest = None
-        if recurse == "True":
-            recurse = True
-        else:
-            recurse = False
+        recurse = bool(recurse)
         if validate:
             Path.validate(source, dest)
 
         if node.tagName == "framework":
             return Framework(source, recurse)
-        if node.tagName == "binary" or node.tagName == "main-binary":
+        if node.tagName in ("binary", "main-binary"):
             return Binary(source, dest, recurse)
         if node.tagName == "translations":
             name = node.getAttribute('name')
@@ -128,10 +125,10 @@ class Path():
 
     def copy_target_glob(self, the_project, source, dest):
         for globbed_source in glob.glob(source):
-                if os.path.isdir(globbed_source):
-                    self.copy_target_recursive(the_project, globbed_source, dest)
-                else:
-                    self.copy_file(the_project, globbed_source, dest)
+            if os.path.isdir(globbed_source):
+                self.copy_target_recursive(the_project, globbed_source, dest)
+            else:
+                self.copy_file(the_project, globbed_source, dest)
 
     def compute_destination(self, the_project):
         if self.dest:
@@ -147,12 +144,11 @@ class Path():
                 relative_dest = the_project.evaluate_path(self.source[m.end():])
                 dest = the_project.get_bundle_path(pathdir, relative_dest)
             else:
-                raise ValueError (f'Invalid path, missing or invalid dest'
-                                  '{self.dest}')
+                raise ValueError (f'Invalid path, missing or invalid dest {self.dest}')
         # If the destination has a wildcard as last component (copied
         # from the source in dest-less paths), ignore the tail.
         (dest_parent, dest_tail) = os.path.split(dest)
-        p = re.compile("[*?]")
+        p = re.compile(r"[*?]")
         if p.search(dest_tail):
             dest = dest_parent
 
@@ -237,6 +233,7 @@ class Binary(Path):
     def __init__(self, source, dest=None, recurse=False):
         super().__init__(source, dest, recurse)
         self.bundledir = 'Resources'
+        self.destinations = []
 
     def copy_file(self, the_project, source, dest):
         dummy_path, ext = os.path.splitext(source)
@@ -254,7 +251,6 @@ class Binary(Path):
         self.destinations.append(dest)
 
     def copy_target(self, the_project, dummy_log = False):
-        self.destinations = []
         if os.path.isdir(self.compute_source_path(the_project)):
             source = self.source
             self.source = os.path.join(source, '*.so')
@@ -358,7 +354,7 @@ class Translation(Path):
             return True
 
         source = the_project.evaluate_path(self.source)
-        if source == None:
+        if source is None:
                 raise ValueError(f'Failed to parse {self.name} translation source!')
         prefix = the_project.get_prefix()
         for root, dummy_trees, files in os.walk(source):
@@ -508,11 +504,11 @@ class Project():
 
         self.bundle_id = plist['CFBundleIdentifier']
 
-    """
-     Replace ${env:?}, ${prefix}, ${prefix:?}, ${project}, ${gtk}, ${gtkdir},
-     ${gtkversion}, ${pkg:?:?}, ${bundle}, and ${name} variables.
-    """
     def evaluate_path(self, path, include_bundle=True):
+        """
+        Replace ${env:?}, ${prefix}, ${prefix:?}, ${project}, ${gtk}, ${gtkdir},
+        ${gtkversion}, ${pkg:?:?}, ${bundle}, and ${name} variables.
+        """
         p = re.compile(r"^\${prefix}")
         path = p.sub(self.get_prefix(), path)
 
@@ -552,8 +548,8 @@ class Project():
         [dirname, basename] = os.path.split(path)
         if not basename:
             return os.path.join(os.path.normpath(dirname), basename)
-        else:
-            return os.path.normpath(path)
+
+        return os.path.normpath(path)
 
     def get_name(self):
         return self.name
@@ -628,14 +624,14 @@ class Project():
     def get_gtk_version(self):
         if self.meta.gtk == "gtk+-3.0":
             return "3.0"
-        else:
-            return "2.0"
+
+        return "2.0"
 
     def get_gtk_dir(self):
         if self.meta.gtk == "gtk+-3.0":
             return "gtk-3.0"
-        else:
-            return "gtk-2.0"
+
+        return "gtk-2.0"
 
     def get_frameworks(self):
         frameworks = []

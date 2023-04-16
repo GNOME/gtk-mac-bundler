@@ -49,7 +49,7 @@ class Bundler():
             if os.path.isdir(path):
                 self.recursive_rm(path)
             else:
-                retval = os.unlink(path)
+                os.unlink(path)
         if os.path.islink(dirname):
             os.unlink(dirname)
         else:
@@ -414,7 +414,8 @@ class Bundler():
 
         # Get strings from binaries.
         for f in self.list_copied_binaries():
-            p = run("strings " + f, shell=True, stdout=PIPE, text=True, errors='ignore')
+            p = run("strings " + f, shell=True, stdout=PIPE, text=True,
+                    check=False, errors='ignore')
             for string in p.stdout.splitlines():
                 string = string.strip()
                 strings.add(string)
