@@ -12,10 +12,10 @@ from .project import Binary, Path, Project
 from . import utils
 
 class Bundler():
-    def __init__(self, project):
-        self.project = project
+    def __init__(self, the_project):
+        self.project = the_project
 
-        self.project_dir = project.get_project_dir()
+        self.project_dir = the_project.get_project_dir()
 
         plist_path = self.project.get_plist_path()
         with open(plist_path, "rb") as f:
@@ -31,8 +31,8 @@ class Bundler():
 
         # Create the bundle in a temporary location first and move it
         # to the final destination when done.
-        self.meta = project.get_meta()
-        self.bundle_path = os.path.join(self.meta.dest, "." + project.get_bundle_name() + ".app")
+        self.meta = the_project.get_meta()
+        self.bundle_path = os.path.join(self.meta.dest, "." + the_project.get_bundle_name() + ".app")
 
     def recursive_rm(self, dirname):
         # Extra safety ;)
@@ -348,8 +348,8 @@ class Bundler():
                 if isinstance(path, Path):
                     source = path.compute_source_path(self.project)
                     if path.is_source_glob():
-                        dir, pattern = os.path.split(source)
-                        for root, dummy_dirs, dummy_files in os.walk(dir):
+                        source_dir, pattern = os.path.split(source)
+                        for root, dummy_dirs, dummy_files in os.walk(source_dir):
                             for item in glob.glob(os.path.join(root, pattern)):
                                 if os.path.isfile(os.path.join(root, item)):
                                     binaries.append(os.path.join(root, item))

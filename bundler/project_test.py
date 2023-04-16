@@ -14,9 +14,9 @@ class MockProject(Project):
         super().__init__(path)
         doc = xml.dom.minidom.parseString(testxml)
         self.root = utils.node_get_element_by_tag_name(doc, "app-bundle")
-        assert self.root != None
-        dir, tail = os.path.split(path)
-        self.project_dir = os.path.join(os.getcwd(), dir)
+        assert self.root is not None
+        project_dir, tail = os.path.split(path)
+        self.project_dir = os.path.join(os.getcwd(), project_dir)
         self.project_path = os.path.join(self.project_dir, tail)
         plist_path = os.path.join(self.project_dir, "test.plist")
         try:
@@ -47,10 +47,10 @@ class ProjectTest(unittest.TestCase):
                              f'Project returned incorrect bad project path {path}')
 
     def test_b_get_project_dir(self):
-        dir = self.goodproject.get_project_dir()
+        project_dir = self.goodproject.get_project_dir()
         good_dir, dummy_tail = os.path.split(ProjectTest.goodpath)
-        self.assertEqual(dir, good_dir,
-                             f'Project returned incorrect project dir {dir}')
+        self.assertEqual(project_dir, good_dir,
+                             f'Project returned incorrect project dir {project_dir}')
 
     def test_c_get_meta(self):
         node = self.goodproject.get_meta()
@@ -77,9 +77,9 @@ class ProjectTest(unittest.TestCase):
             self.fail("Goodproject didn't set the default prefix")
         except Exception:
             self.fail("Goodproject didn't set the plist tag")
-        dir, dummy_tail = os.path.split(ProjectTest.goodpath)
+        project_dir, dummy_tail = os.path.split(ProjectTest.goodpath)
         self.assertEqual(path,
-                             os.path.join(dir, "test.plist"),
+                             os.path.join(project_dir, "test.plist"),
                              f'Bad Plist Path {path}')
 
     def test_f_get_name(self):
@@ -142,16 +142,16 @@ class ProjectTest(unittest.TestCase):
                              f'Wrong number of frameworks {len(fw)}')
 
     def test_l_get_main_binary(self):
-        bin = self.goodproject.get_main_binary()
-        self.assertEqual(bin.source, "${prefix}/bin/foo-source",
-                         f'Bad binary source {bin.source}')
-        self.assertEqual(bin.dest, "${bundle}/Contents/MacOS/${name}-bin",
-                             f'Bad binary destination {bin.dest}')
+        main_bin = self.goodproject.get_main_binary()
+        self.assertEqual(main_bin.source, "${prefix}/bin/foo-source",
+                         f'Bad binary source {main_bin.source}')
+        self.assertEqual(main_bin.dest, "${bundle}/Contents/MacOS/${name}-bin",
+                             f'Bad binary destination {main_bin.dest}')
 
     def test_m_get_binaries(self):
-        bin = self.goodproject.get_binaries()
-        self.assertEqual(len(bin), 2,
-                             f'Wrong number of binaries {len(bin)}')
+        bins = self.goodproject.get_binaries()
+        self.assertEqual(len(bins), 2,
+                             f'Wrong number of binaries {len(bins)}')
 
     def test_n_get_data(self):
         data = self.goodproject.get_data()
