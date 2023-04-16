@@ -120,7 +120,7 @@ class Project_Test(unittest.TestCase):
 
     def test_i_get_launcher_script(self):
         launcher_path = self.goodproject.get_launcher_script()
-        proj_dir = self.goodproject.get_project_dir();
+        proj_dir = self.goodproject.get_project_dir()
         path = self.goodproject.evaluate_path(launcher_path.source)
         self.failUnlessEqual(path,
                              os.path.join(proj_dir, "launcher.sh"),

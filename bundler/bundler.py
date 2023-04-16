@@ -50,7 +50,7 @@ class Bundler(object):
                 self.recursive_rm(path)
             else:
                 retval = os.unlink(path)
-        if (os.path.islink(dirname)):
+        if os.path.islink(dirname):
             os.unlink(dirname)
         else:
             os.rmdir(dirname)
@@ -258,7 +258,7 @@ class Bundler(object):
                 continue
             if os.path.islink(path.source):
                 continue
-            if (path.compute_destination(self.project) in binaries):
+            if path.compute_destination(self.project) in binaries:
                 continue
             copied_paths = path.copy_target(self.project)
             if isinstance(copied_paths, str):
