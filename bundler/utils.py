@@ -3,7 +3,7 @@ import os
 import errno
 
 def evaluate_environment_variables(string):
-    p = re.compile("\${env:(.+?)}")
+    p = re.compile(r"\${env:(.+?)}")
     m = p.search(string)
     while m:
         env = m.group(1)
@@ -31,7 +31,7 @@ def has_pkgconfig_variable(module, key):
     return status
 
 def evaluate_pkgconfig_variables(string):
-    p = re.compile("\${pkg:(.*?):(.*?)}")
+    p = re.compile(r"\${pkg:(.*?):(.*?)}")
     m = p.search(string)
     while m:
         module = m.group(1)

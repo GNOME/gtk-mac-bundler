@@ -380,7 +380,7 @@ class Bundler(object):
                 prefixes = self.meta.prefixes
                 lines = list(filter(prefix_filter,
                                     [line.strip() for line in results.splitlines()]))
-                p = re.compile("(.*\.dylib\.?.*)\s\(compatibility.*$")
+                p = re.compile(r"(.*\.dylib\.?.*)\s\(compatibility.*$")
                 lines = utils.filterlines(p, lines)
                 lines = list(map(relative_path_map, lines))
                 new_libraries = []

@@ -75,7 +75,7 @@ class Path(object):
             raise ValueError(f'The destination path {dest} cannot use a ${{prefix}} '
                              'macro')
 
-        p = re.compile("^\${(?:project}|prefix[:}]|pkg:|env:)")
+        p = re.compile(r"^\${(?:project}|prefix[:}]|pkg:|env:)")
         if not (os.path.isabs(source) or p.match(source)):
             raise ValueError(f'The source path {source} must be absolute or use one of'
                              ' the predefined macros ${{project}}, ${{prefix}},'
@@ -140,7 +140,7 @@ class Path(object):
             # Source must begin with a prefix if we don't have a
             # dest. Skip past the source prefix and replace it with
             # the right bundle path instead.
-            p = re.compile("^\${prefix(:.*?)?}/")
+            p = re.compile(r"^\${prefix(:.*?)?}/")
             m = p.match(self.source)
             if m:
                 pathdir = os.path.join("Contents", self.bundledir)
@@ -384,7 +384,7 @@ class GirFile(Path):
             typelib = os.path.join(typelib_dest, name + '.typelib')
             with open (gir_file, "w", encoding="utf8") as target:
                 for line in lines:
-                    if re.match('\s*shared-library=', line):
+                    if re.match(r'\s*shared-library=', line):
                         (new_line, subs) = re.subn(lib_path, self.bundle_path, line)
                         if subs:
                             target.write(new_line)
@@ -513,35 +513,35 @@ class Project(object):
      ${gtkversion}, ${pkg:?:?}, ${bundle}, and ${name} variables.
     """
     def evaluate_path(self, path, include_bundle=True):
-        p = re.compile("^\${prefix}")
+        p = re.compile(r"^\${prefix}")
         path = p.sub(self.get_prefix(), path)
 
-        p = re.compile("^\${prefix:(.*?)}")
+        p = re.compile(r"^\${prefix:(.*?)}")
         m = p.match(path)
         if m:
             path = p.sub(self.get_prefix(m.group(1)), path)
 
-        p = re.compile("^\${project}")
+        p = re.compile(r"^\${project}")
         path = p.sub(self.project_dir, path)
 
-        p = re.compile("\${gtk}")
+        p = re.compile(r"\${gtk}")
         path = p.sub(self.meta.gtk, path)
 
-        p = re.compile("\${gtkdir}")
+        p = re.compile(r"\${gtkdir}")
         path = p.sub(self.get_gtk_dir(), path)
 
-        p = re.compile("\${gtkversion}")
+        p = re.compile(r"\${gtkversion}")
         path = p.sub(self.get_gtk_version(), path)
 
         try:
-            p = re.compile("\${name}")
+            p = re.compile(r"\${name}")
             path = p.sub(self.name, path)
         except AttributeError:
             pass # can be used before name path is set
 
         if include_bundle:
             try:
-                p = re.compile("^\${bundle}")
+                p = re.compile(r"^\${bundle}")
                 path = p.sub(self.get_bundle_path(), path)
             except AttributeError:
                 pass # can be used before bundle path is set
