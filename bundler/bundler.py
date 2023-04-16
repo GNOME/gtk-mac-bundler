@@ -53,10 +53,9 @@ class Bundler(object):
     def create_pkglist(self):
         path = self.project.get_bundle_path("Contents", "PkgInfo")
         path = self.project.evaluate_path(path)
-        f = open (path, "w")
-        f.write(self.plist['CFBundlePackageType'])
-        f.write(self.plist['CFBundleSignature'])
-        f.close()
+        with open (path, "w", encoding='utf-8') as fout:
+            fout.write(self.plist['CFBundlePackageType'])
+            fout.write(self.plist['CFBundleSignature'])
 
     def copy_plist(self):
         path = Path(self.project.get_plist_path(),
@@ -70,10 +69,10 @@ class Bundler(object):
 
         local_env = os.environ.copy()
         local_env[env_var] = env_val
-        p = Popen(temppath, env=local_env, stdout=PIPE)
-        f = p.communicate()[0].splitlines()
-        os.remove(temppath)
-        return f
+        with Popen(temppath, env=local_env, stdout=PIPE) as output:
+            catalog = output.communicate()[0].splitlines()
+            os.remove(temppath)
+            return catalog
 
     def create_pango_setup(self):
         if utils.has_pkgconfig_module("pango") and \
@@ -93,18 +92,17 @@ class Bundler(object):
         import tempfile
 
         fd, tmp_filename = tempfile.mkstemp()
-        f = os.fdopen(fd, "w")
-        f.write("[Pango]\n")
-        f.write("ModulesPath=" + modulespath)
-        f.write("\n")
-        f.close()
+        with os.fdopen(fd, "w", encoding='utf-8') as f:
+            f.write("[Pango]\n")
+            f.write("ModulesPath=" + modulespath)
+            f.write("\n")
+
 
         env_var = "PANGO_RC_FILE"
         f = self.run_module_catalog(env_var, tmp_filename, 'pango-querymodules')
 
         path = self.project.get_bundle_path("Contents/Resources/etc/pango")
         utils.makedirs(path)
-        fout = open(os.path.join(path, "pango.modules"), "w")
 
         if V(module_version) < V('1.8.0'):
             prefix_path  = os.path.join("Contents", "Resources")
@@ -114,39 +112,41 @@ class Bundler(object):
 
         prefix = self.project.get_bundle_path(prefix_path)
 
-        for line in f:
-            line = line.strip()
-            if line.startswith("# ModulesPath"):
-                continue
+        with open(os.path.join(path, "pango.modules"), "w", encoding='utf-8') as fout:
+            for line in f:
+                line = line.encode('utf-8')
+                line = line.strip()
+                if line.startswith("# ModulesPath"):
+                    continue
 
-            # Replace the hardcoded bundle path with @executable_path...
-            if line.startswith(prefix):
-                line = line[len(prefix):]
-#Newer versions of pango have been modified to look in the right place
-#for modules (providing the PANGO_LIB_DIR is set to point to the
-#bundle_lib folder).
+                # Replace the hardcoded bundle path with @executable_path...
+                if line.startswith(prefix):
+                    line = line[len(prefix):]
+                #Newer versions of pango have been modified to look in
+                #the right place for modules (providing the
+                #PANGO_LIB_DIR is set to point to the bundle_lib
+                #folder).
                 if V(module_version) < V('1.8.0'):
                     line = "@executable_path/../Resources" + line
 
-            fout.write(line)
-            fout.write("\n")
-        fout.close()
+                fout.write(line)
+                fout.write("\n")
 
         os.unlink(tmp_filename)
 
         # Create the final pangorc file
         path = self.project.get_bundle_path("Contents/Resources/etc/pango")
         utils.makedirs(path)
-        f = open(os.path.join(path, "pangorc"), "w")
-        f.write("[Pango]\n")
-#Pango 2.32 (corresponding to module_version 1.8.0) and later don't
-#interpret "./" to mean the same directory that the rc file is in, so
-#this doesn't work any more. However, pango does know to look in the
-#bundle directory (when given the right environment variable), so we
-#don't need this, either.
-        if V(module_version) < V('1.8.0'):
-            f.write("ModuleFiles=./pango.modules\n")
-        f.close()
+        with open(os.path.join(path, "pangorc"), "w", encoding='utf-8') as fout:
+            fout.write("[Pango]\n")
+            #Pango 2.32 (corresponding to module_version 1.8.0) and
+            #later don't interpret "./" to mean the same directory
+            #that the rc file is in, so this doesn't work any
+            #more. However, pango does know to look in the bundle
+            #directory (when given the right environment variable), so
+            #we don't need this, either.
+            if V(module_version) < V('1.8.0'):
+                fout.write("ModuleFiles=./pango.modules\n")
 
     def create_gtk_immodules_setup(self):
         path = self.project.get_bundle_path("Contents/Resources")
@@ -166,24 +166,23 @@ class Bundler(object):
                                                 gtkdir)
             file = 'immodules.cache'
         utils.makedirs(path)
-        fout = open(os.path.join(path, file), "w")
+        with open(os.path.join(path, file), "w", encoding='utf-8') as fout:
 
-        prefix = "\"" + self.project.get_bundle_path("Contents/Resources")
+            prefix = "\"" + self.project.get_bundle_path("Contents/Resources")
 
-        for line in f:
-            if sys.version_info[0] > 2:
-                line = line.decode('utf-8')
-            line = line.strip()
-            if line.startswith("#"):
-                continue
+            for line in f:
+                if sys.version_info[0] > 2:
+                    line = line.decode('utf-8')
+                    line = line.strip()
+                    if line.startswith("#"):
+                        continue
 
-            # Replace the hardcoded bundle path with @executable_path...
-            if line.startswith(prefix):
-                line = line[len(prefix):]
-                line = "\"@executable_path/../Resources" + line
-            fout.write(line)
-            fout.write("\n")
-        fout.close()
+                # Replace the hardcoded bundle path with @executable_path...
+                if line.startswith(prefix):
+                    line = line[len(prefix):]
+                    line = "\"@executable_path/../Resources" + line
+                fout.write(line)
+                fout.write("\n")
 
     def create_gdk_pixbuf_loaders_setup(self):
         modulespath = ""
@@ -226,23 +225,22 @@ class Bundler(object):
                                     'gdk-pixbuf-query-loaders')
 
         utils.makedirs(os.path.dirname(cachepath))
-        fout = open(cachepath, "w")
+        with open(cachepath, "w", encoding='utf-8') as fout:
 
-        prefix = "\"" + self.project.get_bundle_path("Contents/Resources")
-        for line in f:
-            if sys.version_info[0] > 2:
-                line = line.decode('utf-8')
-            line = line.strip()
-            if line.startswith("#"):
-                continue
+            prefix = "\"" + self.project.get_bundle_path("Contents/Resources")
+            for line in f:
+                if sys.version_info[0] > 2:
+                    line = line.decode('utf-8')
+                line = line.strip()
+                if line.startswith("#"):
+                    continue
 
-            # Replace the hardcoded bundle path with @executable_path...
-            if line.startswith(prefix):
-                line = line[len(prefix):]
-                line = "\"@executable_path/../Resources" + line
-            fout.write(line)
-            fout.write("\n")
-        fout.close()
+                # Replace the hardcoded bundle path with @executable_path...
+                if line.startswith(prefix):
+                    line = line[len(prefix):]
+                    line = "\"@executable_path/../Resources" + line
+                fout.write(line)
+                fout.write("\n")
 
     def copy_binaries(self):
         #clean up duplicates
@@ -364,39 +362,39 @@ class Bundler(object):
             if not binaries:
                 break
             cmds.extend(binaries)
-            f = Popen(cmds, stdout=PIPE, stderr=PIPE)
-            results, errors = f.communicate()
-            if errors:
+            with Popen(cmds, stdout=PIPE, stderr=PIPE) as output:
+                results, errors = output.communicate()
+                if errors:
+                    if sys.version_info[0] > 2:
+                        print("otool errors:\n%s" % errors.decode("utf-8"))
+                    else:
+                        print("otool errors:\n%s" % errors)
+
                 if sys.version_info[0] > 2:
-                    print("otool errors:\n%s" % errors.decode("utf-8"))
-                else:
-                    print("otool errors:\n%s" % errors)
+                    results = results.decode("utf-8")
+                prefixes = self.meta.prefixes
+                lines = list(filter(prefix_filter,
+                                    [line.strip() for line in results.splitlines()]))
+                p = re.compile("(.*\.dylib\.?.*)\s\(compatibility.*$")
+                lines = utils.filterlines(p, lines)
+                lines = list(map(relative_path_map, lines))
+                new_libraries = []
+                for library in set(lines):
+                    # Replace the real path with the right prefix so we can
+                    # create a Path object.
+                    for (key, value) in list(prefixes.items()):
+                        if library.startswith(value):
+                            path = Binary("${prefix:" + key + "}" + library[len(value):])
+                            new_libraries.append(path)
 
-            if sys.version_info[0] > 2:
-                results = results.decode("utf-8")
-            prefixes = self.meta.prefixes
-            lines = list(filter(prefix_filter,
-                                [line.strip() for line in results.splitlines()]))
-            p = re.compile("(.*\.dylib\.?.*)\s\(compatibility.*$")
-            lines = utils.filterlines(p, lines)
-            lines = list(map(relative_path_map, lines))
-            new_libraries = []
-            for library in set(lines):
-                # Replace the real path with the right prefix so we can
-                # create a Path object.
-                for (key, value) in list(prefixes.items()):
-                    if library.startswith(value):
-                        path = Binary("${prefix:" + key + "}" + library[len(value):])
-                        new_libraries.append(path)
+                n_paths = len(paths)
+                n_iterations += 1
+                if n_iterations > 10:
+                    print("Too many tries to resolve library dependencies")
+                    sys.exit(1)
 
-            n_paths = len(paths)
-            n_iterations += 1
-            if n_iterations > 10:
-                print("Too many tries to resolve library dependencies")
-                sys.exit(1)
-
-            self.binaries_to_copy.extend(new_libraries)
-            paths = new_libraries
+                self.binaries_to_copy.extend(new_libraries)
+                paths = new_libraries
 
     def copy_icon_themes(self):
         all_icons = set()

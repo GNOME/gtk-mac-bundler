@@ -301,11 +301,11 @@ class Binary(Path):
         if entfile:
             args.extend(['--entitlements', entfile])
         args.append(target)
-        output = Popen(args, stdout=PIPE, stderr=STDOUT)
-        results = output.communicate()[0]
-        if results:
-            raise SystemError("Warning! Codesigning %s returned error %s."
-                  % (target, results))
+        with Popen(args, stdout=PIPE, stderr=STDOUT) as output:
+            results = output.communicate()[0]
+            if results:
+                raise SystemError("Warning! Codesigning %s returned error %s."
+                                  % (target, results))
 
     def strip_debugging(self, target):
         if target.endswith(".dylib") or target.endswith(".so"):
