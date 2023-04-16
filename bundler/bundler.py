@@ -37,7 +37,7 @@ class Bundler(object):
     def recursive_rm(self, dirname):
         # Extra safety ;)
         if dirname in [ "/", os.getenv("HOME"), os.path.join(os.getenv("HOME"), "Desktop"), self.meta.dest ]:
-            print("Eek, trying to remove a bit much, eh? (%s)" % (dirname))
+            print(f"Eek, trying to remove a bit much, eh? {dirname}")
             sys.exit(1)
 
         if not os.path.exists(dirname):
@@ -70,8 +70,9 @@ class Bundler(object):
         path = Path(self.project.get_plist_path(),
                     self.project.get_bundle_path("Contents/Info.plist"))
         path.copy_target(self.project)
+
     def run_module_catalog(self, env_var, env_val, exe_name):
-        exepath = self.project.evaluate_path('${prefix}/bin/%s' % exe_name)
+        exepath = self.project.evaluate_path(f'${{prefix}}/bin/{exe_name}')
         temppath = self.project.get_bundle_path('Contents/MacOS/', exe_name)
         path = Binary(exepath, temppath)
         path.copy_target(self.project)
@@ -253,7 +254,7 @@ class Bundler(object):
         binaries = list(set(self.binaries_to_copy))
         for path in binaries:
             if not isinstance(path, Path):
-                print("Warning, %s not a Path object, skipping." % path)
+                print(f'Warning, {path} not a Path object, skipping.')
                 continue
             if os.path.islink(path.source):
                 continue
@@ -261,7 +262,7 @@ class Bundler(object):
                 continue
             copied_paths = path.copy_target(self.project)
             if isinstance(copied_paths, str):
-                print("Warning: copy_target returned string %s" % copied_paths)
+                print(f'Warning: copy_target returned string {copied_paths}')
                 copied_paths = [copied_paths]
             bad_paths = [p for p in copied_paths if (p.endswith('.la')
                                                      or p.endswith('.a'))]
@@ -284,18 +285,16 @@ class Bundler(object):
         for path in self.copied_binaries:
             try:
                 if os.path.isdir(path):
-                    print ("Recursing down copied binary path %s." % path)
+                    print (f'Recursing down copied binary path {path}.')
                     for root, dirs, files in os.walk(path):
                         paths.extend([os.path.join(root, l) for l in files])
                 else:
                     paths.append(path)
             except TypeError as err:
                 if isinstance(path, Path):
-                    print("Warning, Path object for %s in copied binaries list."
-                          % path.source)
+                    print(f'Warning, Path object for {path.source} in copied binaries list.')
                 else:
-                    print("Warning: Wrong object of type %s in copied_binaries list."
-                      % type(path))
+                    print(f'Warning: Wrong object of type {type(path)} in copied_binaries list.')
                 continue
 
         paths = list(filter(filter_path, paths))
@@ -319,12 +318,12 @@ class Bundler(object):
                     path = os.path.join(prefix, "lib", line)
                     if os.path.exists(path):
                         return path
-                print("Cannot find a matching prefix for %s" % (line))
+                print(f'Cannot find a matching prefix for {line}')
             return line
 
         def prefix_filter(line):
             if not "(compatibility" in line:
-                #print "Removed %s" % line
+                #print(f'Removed {line}')
                 return False
 
             if line.startswith("/usr/X11"):
@@ -372,9 +371,9 @@ class Bundler(object):
                 results, errors = output.communicate()
                 if errors:
                     if sys.version_info[0] > 2:
-                        print("otool errors:\n%s" % errors.decode("utf-8"))
+                        print(f'otool errors:\n{errors.decode("utf-8")}')
                     else:
-                        print("otool errors:\n%s" % errors)
+                        print(f'otool errors:\n{errors}')
 
                 if sys.version_info[0] > 2:
                     results = results.decode("utf-8")
@@ -514,11 +513,11 @@ class Bundler(object):
 
 if __name__ == '__main__':
     if len(sys.argv) != 2:
-        print("Usage: %s <bundle descriptopn file>" % (sys.argv[0]))
+        print(f'Usage: {sys.argv[0]} <bundle description file>')
         sys.exit(2)
 
     if not os.path.exists(sys.argv[1]):
-        print("File %s does not exist" % (sys.argv[1]))
+        print(f'File {sys.argv[1]} does not exist')
         sys.exit(2)
 
     project = Project(sys.argv[1])

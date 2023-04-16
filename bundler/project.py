@@ -69,33 +69,31 @@ class Path(object):
             raise ValueError("The source path cannot be empty")
 
         if source.startswith("${bundle}"):
-            raise ValueError("The source path %s cannot use a ${bundle} macro"
-                             % source)
+            raise ValueError(f'The source path {source} cannot use a ${{bundle}} macro')
 
         if dest and dest.startswith("${prefix"):
-            raise ValueError("The destination path %s cannot use a ${prefix} "
-                             "macro" % dest)
+            raise ValueError(f'The destination path {dest} cannot use a ${{prefix}} '
+                             'macro')
 
         p = re.compile("^\${(?:project}|prefix[:}]|pkg:|env:)")
         if not (os.path.isabs(source) or p.match(source)):
-            raise ValueError("The source path %s must be absolute or use one of"
-                             " the predefined macros ${project}, ${prefix},"
-                             " ${prefix:*}, ${env:*}, or ${pkg:*:*}" % source)
+            raise ValueError(f'The source path {source} must be absolute or use one of'
+                             ' the predefined macros ${{project}}, ${{prefix}},'
+                             ' ${{prefix:*}}, ${{env:*}}, or ${{pkg:*:*}}')
 
         if not (source.startswith("${prefix") or dest):
-            raise ValueError("If the source %s doesn't use a ${prefix} or "
-                             "${prefix:*} macro, the destination path must be "
-                             "set" % source)
+            raise ValueError(f"If the source {source} doesn't use a ${{prefix}} or "
+                             "${{prefix:*}} macro, the destination path must be "
+                             "set")
 
         if dest and not dest.startswith("${bundle}"):
-            raise ValueError("The destination path %s must start with ${bundle}"
-                             % dest)
+            raise ValueError(f'The destination path {dest} must start with ${{bundle}}')
 
         return True
 
     def copy_file(self, project, source, dest):
         try:
-            # print "Copying %s to %s" % (source, dest)
+            # print(f'Copying {source} to {dest}')
             shutil.copy2(source, dest)
         except EnvironmentError as e:
             if e.errno == errno.ENOENT:
@@ -103,8 +101,7 @@ class Path(object):
             elif e.errno in (errno.EEXIST, errno.EACCES):
                 print("Warning, path already exists: " + dest)
             else:
-                raise EnvironmentError("Error %s when copying file: %s"
-                                       % (str(e), source))
+                raise EnvironmentError(f'Error {str(e)} when copying file: {source}')
 
 
     def copy_target_glob_recursive(self, project, source, dest):
@@ -150,8 +147,7 @@ class Path(object):
                 relative_dest = project.evaluate_path(self.source[m.end():])
                 dest = project.get_bundle_path(pathdir, relative_dest)
             else:
-                raise ValueError ("Invalid path, missing or invalid dest %s."
-                                  % self.dest)
+                raise ValueError (f'Invalid path, missing or invalid dest {self.dest}')
         # If the destination has a wildcard as last component (copied
         # from the source in dest-less paths), ignore the tail.
         (dest_parent, dest_tail) = os.path.split(dest)
@@ -249,8 +245,8 @@ class Binary(Path):
         super(Binary, self).copy_file(project, source, dest)
         if os.path.isdir(dest):
             dest = os.path.join(dest, os.path.split(source)[1])
-        # print ("Copy binary file %s to %s %s"
-        #       % (source, 'directory' if os.path.isdir(dest) else 'file', dest))
+        # print(f"Copy binary file {source} to "
+        #       "{'directory' if os.path.isdir(dest) else 'file'} {dest}")
         self.fix_rpaths(project, dest)
         # self.strip_debugging(dest)
         self.sign(project, dest)
@@ -304,8 +300,7 @@ class Binary(Path):
         with Popen(args, stdout=PIPE, stderr=STDOUT) as output:
             results = output.communicate()[0]
             if results:
-                raise SystemError("Warning! Codesigning %s returned error %s."
-                                  % (target, results))
+                raise SystemError(f'Warning! Codesigning {target} returned error {results}')
 
     def strip_debugging(self, target):
         if target.endswith(".dylib") or target.endswith(".so"):
@@ -363,7 +358,7 @@ class Translation(Path):
 
         source = project.evaluate_path(self.source)
         if source == None:
-                raise ValueError("Failed to parse %s translation source!" % self.name)
+                raise ValueError(f'Failed to parse {self.name} translation source!')
         prefix = project.get_prefix()
         for root, trees, files in os.walk(source):
             for file in filter(name_filter, files):
@@ -408,7 +403,7 @@ class GirFile(Path):
             try:
                 typelib_paths.append(transform_file(globbed_source))
             except Exception as err:
-                print('Error in transformation of %s: %s' % (globbed_source, err))
+                print(f'Error in transformation of {globbed_source} { err}')
         return typelib_paths
 
 class Data(Path):
@@ -486,7 +481,7 @@ class Project(object):
                 # Get the first app-bundle tag and ignore any others.
                 self.root = utils.node_get_element_by_tag_name(doc, "app-bundle")
             except:
-                print("Could not load project %s:" % (project_path))
+                print(f'Could not load project {project_path}:')
                 raise
         if not self.root:
             raise Exception("Unable to load the root node.")
@@ -695,12 +690,12 @@ class Project(object):
 if __name__ == '__main__':
     project = Project(os.path.join(os.getcwd(), 'giggle.bundle'))
 
-    print("General:")
-    print("  Project path: %s" % (project.get_project_path()))
-    print("  Plist path: %s" % (project.get_plist_path()))
-    print("  App name: %s" % (project.name))
-    print("  Destination: %s" % (project.get_meta().dest))
-    print("  Overwrite: %s" % (str(project.get_meta().overwrite)))
+    print('General:')
+    print(f'  Project path: {project.get_project_path()}')
+    print(f'  Plist path: {project.get_plist_path()}')
+    print(f'  App name: {project.name}')
+    print(f'  Destination: {project.get_meta().dest}')
+    print(f'  Overwrite: {str(project.get_meta().overwrite)}')
 
     print("Frameworks:")
     for framework in project.get_frameworks():
@@ -708,12 +703,12 @@ if __name__ == '__main__':
 
     print("Main binary:")
     binary = project.get_main_binary()
-    print("  %s => %s" % (binary.source, binary.dest))
+    print(f'  {binary.source} => {binary.dest}')
 
     print("Launcher:")
     launcher_script = project.get_launcher_script()
-    print("  %s => %s" % (launcher_script.source, launcher_script.dest))
+    print(f'  {launcher_script.source} => {launcher_script.dest}')
 
     print("Binaries:")
     for binary in project.get_binaries():
-        print("  %s => %s" % (binary.source, binary.dest))
+        print(f'  {binary.source} => {binary.dest}')

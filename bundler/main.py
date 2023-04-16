@@ -6,11 +6,11 @@ from .bundler import Bundler
 
 def main(argv):
     if len(argv) != 1:
-        print("Usage: %s <bundle descriptopn file>" % (sys.argv[0]))
+        print(f'Usage: {sys.argv[0]} <bundle descriptopn file>')
         sys.exit(2)
 
     if not os.path.exists(argv[0]):
-        print("File %s does not exist" % (argv[0]))
+        print(f'File {argv[0]} does not exist')
         sys.exit(2)
 
     project = Project(argv[0])
@@ -18,4 +18,4 @@ def main(argv):
     #try:
     bundler.run()
     #except Exception as err:
-     #   print("Bundler encountered an error %s" % str(err))
+     #   print(f'Bundler encountered an error {str(err)}')

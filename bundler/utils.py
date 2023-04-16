@@ -9,7 +9,7 @@ def evaluate_environment_variables(string):
         env = m.group(1)
         value = os.getenv(env)
         if not value:
-            raise Exception("Environment variable %s is undefined" % (env))
+            raise Exception(f'Environment variable {env}is undefined')
         string = p.sub(value, string, 1)
         m = p.search(string)
 
@@ -46,11 +46,10 @@ def evaluate_pkgconfig_variables(string):
             if module == "pango" and key == "pango_module_version":
                 if has_pkgconfig_module("pango"):
                     raise Exception(
-                        "'%s' got removed in '%s' "
+                        f"'{key}' got removed in '{module}' "
                         "1.38. Remove any reference to pango "
-                        "modules in your bundle xml." % (
-                            key, module))
-            raise Exception("pkg-config variable '%s %s' is undefined" % (key, module))
+                        "modules in your bundle xml.")
+            raise Exception(f"pkg-config variable '{key} {module}' is undefined")
         string = p.sub(value, string, 1)
         m = p.search(string)
 

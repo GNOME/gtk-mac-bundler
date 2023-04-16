@@ -41,17 +41,16 @@ class Project_Test(unittest.TestCase):
     def test_a_get_project_path(self):
         path = self.goodproject.get_project_path()
         self.failUnlessEqual(path, Project_Test.goodpath,
-                   "Project returned incorrect project path %s wanted %s" % 
-                             (path, Project_Test.goodpath) )
+                             f'Project returned incorrect project path {path} wanted {Project_Test.goodpath}')
         path = self.badproject.get_project_path()
         self.failUnlessEqual(path, Project_Test.badpath,
-                   "Project returned incorrect bad project path %s" % path)
+                             f'Project returned incorrect bad project path {path}')
 
     def test_b_get_project_dir(self):
         dir = self.goodproject.get_project_dir()
         good_dir, tail = os.path.split(Project_Test.goodpath)
         self.failUnlessEqual(dir, good_dir,
-                   "Project returned incorrect project dir %s" % dir)
+                             f'Project returned incorrect project dir {dir}')
 
     def test_c_get_meta(self):
         node = self.goodproject.get_meta()
@@ -63,13 +62,13 @@ class Project_Test(unittest.TestCase):
             pfx = self.goodproject.get_prefix()
         except KeyError:
             self.fail("Goodproject didn't set the default prefix")
-        self.failUnlessEqual(pfx, os.getenv("JHBUILD_PREFIX", 
-                                            "Default prefix %s" % pfx))
+        self.failUnlessEqual(pfx, os.getenv("JHBUILD_PREFIX",
+                                            f'Default prefix {pfx}'))
         try:
             pfx = self.goodproject.get_prefix("alt")
         except KeyError:
             self.fail("Goodproject didn't set the alt prefix")
-        self.failUnlessEqual(pfx, "/usr/local/gtk", "Alternate prefix %s" % pfx)
+        self.failUnlessEqual(pfx, "/usr/local/gtk", f'Alternate prefix {pfx}')
 
     def test_e_get_plist_path(self):
         try:
@@ -79,9 +78,9 @@ class Project_Test(unittest.TestCase):
         except Exception:
             self.fail("Goodproject didn't set the plist tag")
         dir, tail = os.path.split(Project_Test.goodpath)
-        self.failUnlessEqual(path, 
+        self.failUnlessEqual(path,
                              os.path.join(dir, "test.plist"),
-                             "Bad Plist Path %s" % path)
+                             f'Bad Plist Path {path}')
 
     def test_f_get_name(self):
         try:
@@ -95,13 +94,13 @@ class Project_Test(unittest.TestCase):
         except IOError:
             self.fail("Path problem " + plist_path)
         pname = self.goodproject.get_name()
-        self.failUnlessEqual(pname, name, "Bad Name %s" % pname)
+        self.failUnlessEqual(pname, name, f'Bad Name {pname}')
 
 
 
 #If get_name works, this will too.
     def test_g_get_bundle_path(self):
-        pass 
+        pass
 
     def test_h_evaluate_path(self):
         try:
@@ -112,12 +111,12 @@ class Project_Test(unittest.TestCase):
             name = self.goodproject.get_bundle_path()
         except AttributeError:
             self.fail("Project didn't set the name attribute")
-        self.failUnlessEqual(path, os.path.join(name, os.path.join("Contents/MacOS", self.goodproject.name)), "Bundle path evaluation failed %s" % path)
+        self.failUnlessEqual(path, os.path.join(name, os.path.join("Contents/MacOS", self.goodproject.name)), f'Bundle path evaluation failed {path}')
         path = self.goodproject.evaluate_path("${prefix}/bin/foo")
-        self.failUnlessEqual(path, 
-                             os.path.join(self.goodproject.get_prefix(), 
-                                          "bin/foo"), 
-                             "Prefix path evaluation failed %s" % path)
+        self.failUnlessEqual(path,
+                             os.path.join(self.goodproject.get_prefix(),
+                                          "bin/foo"),
+                             f'Prefix path evaluation failed {path}')
 
     def test_i_get_launcher_script(self):
         launcher_path = self.goodproject.get_launcher_script()
@@ -132,44 +131,41 @@ class Project_Test(unittest.TestCase):
 
     def test_j_get_icon_themes(self):
         themes = self.goodproject.get_icon_themes()
-        self.failUnlessEqual(len(themes), 2, 
-                             "Wrong number of themes %d" % len(themes))
-        self.failUnlessEqual(themes[-1].name, "hicolor", 
-                             "No hicolor theme %s" % themes[-1].name)
+        self.failUnlessEqual(len(themes), 2,
+                             f'Wrong number of themes {len(themes)}')
+        self.failUnlessEqual(themes[-1].name, "hicolor",
+                             f'No hicolor theme {themes[-1].name}')
 
     def test_k_get_frameworks(self):
         fw = self.goodproject.get_frameworks()
-        self.failUnlessEqual(len(fw), 1, 
-                             "Wrong number of frameworks %d" % len(fw))
+        self.failUnlessEqual(len(fw), 1,
+                             f'Wrong number of frameworks {len(fw)}')
 
     def test_l_get_main_binary(self):
         bin = self.goodproject.get_main_binary()
-        self.failUnlessEqual(bin.source, "${prefix}/bin/foo-source", 
-                         "Bad binary source %s" % bin.source)
-        self.failUnlessEqual(bin.dest, "${bundle}/Contents/MacOS/${name}-bin", 
-                    "Bad binary destination %s" % bin.dest)
+        self.failUnlessEqual(bin.source, "${prefix}/bin/foo-source",
+                         f'Bad binary source {bin.source}')
+        self.failUnlessEqual(bin.dest, "${bundle}/Contents/MacOS/${name}-bin",
+                             f'Bad binary destination {bin.dest}')
 
     def test_m_get_binaries(self):
         bin = self.goodproject.get_binaries()
-        self.failUnlessEqual(len(bin), 2, 
-                             "Wrong number of binaries %d" % len(bin))
+        self.failUnlessEqual(len(bin), 2,
+                             f'Wrong number of binaries {len(bin)}')
 
     def test_n_get_data(self):
         data = self.goodproject.get_data()
-        self.failUnlessEqual(len(data), 3, 
-                             "Wrong number of data paths %d" % len(data))
-        self.failUnlessEqual(data[2].dest, 
-                             "${bundle}/Contents/Resources/etc/gtk-2.0/gtkrc", 
-                             "Data[2] Destination %s" % data[2].dest)
+        self.failUnlessEqual(len(data), 3,
+                             f'Wrong number of data paths {len(data)}')
+        self.failUnlessEqual(data[2].dest,
+                             "${bundle}/Contents/Resources/etc/gtk-2.0/gtkrc",
+                             f'Data[2] Destination {data[2].dest}')
 
     def test_o_get_translations(self):
         trans = self.goodproject.get_translations()
-        self.failUnlessEqual(len(trans), 1, 
-                             "Wrong number of translations %d" % len(trans))
-        self.failUnlessEqual(trans[0].name, "foo", 
-                             "Bad translation name %s" % trans[0].name)
+        self.failUnlessEqual(len(trans), 1,
+                             f'Wrong number of translations {len(trans)}')
+        self.failUnlessEqual(trans[0].name, "foo",
+                             f'Bad translation name {trans[0].name}')
         self.failUnlessEqual(trans[0].source, "${prefix}/share/locale",
-                             "Bad translation source %s" % trans[0].source)
-
-
-        
+                             f'Bad translation source {trans[0].source}')
