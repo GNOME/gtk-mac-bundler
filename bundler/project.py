@@ -399,7 +399,7 @@ class GirFile(Path):
         for globbed_source in glob.glob(filename):
             try:
                 typelib_paths.append(transform_file(globbed_source))
-            except Exception as err:
+            except ValueError as err:
                 print(f'Error in transformation of {globbed_source} { err}')
         return typelib_paths
 
@@ -481,7 +481,7 @@ class Project():
                 print(f'Could not load project {project_path}:')
                 raise
         if not self.root:
-            raise Exception("Unable to load the root node.")
+            raise ValueError("Unable to load the root node.")
         # The directory the project file is in (as opposed to
         # project_path which is the path including the filename).
         self.project_dir, dummy_tail = os.path.split(project_path)
@@ -579,7 +579,7 @@ class Project():
     def get_plist_path(self):
         plist = utils.node_get_element_by_tag_name(self.root, "plist")
         if not plist:
-            raise Exception("The 'plist' tag is required")
+            raise ValueError("The 'plist' tag is required")
         return  self.evaluate_path(utils.node_get_string(plist))
 
     def get_entitlements_path(self):
@@ -598,7 +598,7 @@ class Project():
                 if os.path.exists(launcher):
                     path = Path(launcher, "${bundle}/Contents/MacOS/${name}")
                 else:
-                    raise Exception("Empty launcher tag but no launcher.sh")
+                    raise ValueError("Empty launcher tag but no launcher.sh")
             else:
                 path.dest = "${bundle}/Contents/MacOS/${name}"
             return path
@@ -657,7 +657,7 @@ class Project():
     def get_main_binary(self):
         node = utils.node_get_element_by_tag_name(self.root, "main-binary")
         if not node:
-            raise Exception("The file has no <main-binary> tag")
+            raise ValueError("The file has no <main-binary> tag")
 
         main_binary = Path.from_node(node)
 

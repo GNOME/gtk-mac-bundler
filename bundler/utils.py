@@ -1,6 +1,7 @@
 import re
 import os
 import errno
+from xml.dom import DOMException
 
 def evaluate_environment_variables(string):
     p = re.compile(r"\${env:(.+?)}")
@@ -9,7 +10,7 @@ def evaluate_environment_variables(string):
         env = m.group(1)
         value = os.getenv(env)
         if not value:
-            raise Exception(f'Environment variable {env}is undefined')
+            raise EnvironmentError(f'Environment variable {env}is undefined')
         string = p.sub(value, string, 1)
         m = p.search(string)
 
@@ -45,11 +46,11 @@ def evaluate_pkgconfig_variables(string):
             # xml files) when using a newer pango build.
             if module == "pango" and key == "pango_module_version":
                 if has_pkgconfig_module("pango"):
-                    raise Exception(
+                    raise ValueError(
                         f"'{key}' got removed in '{module}' "
                         "1.38. Remove any reference to pango "
                         "modules in your bundle xml.")
-            raise Exception(f"pkg-config variable '{key} {module}' is undefined")
+            raise EnvironmentError(f"pkg-config variable '{key} {module}' is undefined")
         string = p.sub(value, string, 1)
         m = p.search(string)
 
@@ -65,16 +66,16 @@ def makedirs(path):
 def node_get_elements_by_tag_name(node, name):
     try:
         return node.getElementsByTagName(name)
-    except:
+    except DOMException:
         return []
 
 def node_get_element_by_tag_name(node, name):
     if not node:
-        raise Exception("Can't get an element without a parent.")
+        raise ValueError("Can't get an element without a parent.")
     try:
         (data,) = node.getElementsByTagName(name)
         return data
-    except:
+    except ValueError:
         return None
 
 def node_get_string(node, default=None):
@@ -82,7 +83,7 @@ def node_get_string(node, default=None):
         if node.firstChild is None:
             return None
         return node.firstChild.data.strip()
-    except:
+    except AttributeError:
         return default
 
 def node_get_property_boolean(node, name, default=False):
@@ -90,7 +91,7 @@ def node_get_property_boolean(node, name, default=False):
         value = node.getAttribute(name)
         if value in [ "true", "yes" ]:
             return True
-    except:
+    except AttributeError:
         pass
 
     return default

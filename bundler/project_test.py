@@ -75,7 +75,7 @@ class ProjectTest(unittest.TestCase):
             path = self.goodproject.get_plist_path()
         except KeyError:
             self.fail("Goodproject didn't set the default prefix")
-        except Exception:
+        except ValueError:
             self.fail("Goodproject didn't set the plist tag")
         project_dir, dummy_tail = os.path.split(ProjectTest.goodpath)
         self.assertEqual(path,
