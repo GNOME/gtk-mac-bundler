@@ -1,7 +1,8 @@
-import sys, os
+import os
+import sys
 
-from .project import *
-from .bundler import *
+from .project import Project
+from .bundler import Bundler
 
 def main(argv):
     if len(argv) != 1:

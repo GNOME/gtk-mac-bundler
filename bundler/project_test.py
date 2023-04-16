@@ -3,8 +3,8 @@ import errno
 import sys
 import unittest
 import xml.dom.minidom
-from xml.dom.minidom import Node
 from plistlib import load as plist_load
+
 from .project import Project
 from . import utils
 

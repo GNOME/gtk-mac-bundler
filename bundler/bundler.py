@@ -1,5 +1,14 @@
+import glob
+import os
+import plistlib
+import re
+import shutil
 from subprocess import PIPE, Popen, run
-from .project import *
+import sys
+import tempfile
+from packaging.version import Version as V
+
+from .project import Binary, Path, Project
 from . import utils
 
 class Bundler(object):
@@ -87,9 +96,6 @@ class Bundler(object):
         modulespath = self.project.get_bundle_path("Contents/Resources/lib/pango/" +
                                                    module_version +
                                                    "/modules/")
-
-        from distutils.version import StrictVersion as V
-        import tempfile
 
         fd, tmp_filename = tempfile.mkstemp()
         with os.fdopen(fd, "w", encoding='utf-8') as f:
