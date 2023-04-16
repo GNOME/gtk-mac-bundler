@@ -11,7 +11,7 @@ from . import utils
 
 # Base class for anything that can be copied into a bundle with a
 # source and dest.
-class Path(object):
+class Path():
     def __init__(self, source, dest=None, recurse=False):
         if source and len(source) == 0:
             source = None
@@ -196,12 +196,12 @@ class Path(object):
         return dest
 
 # Used for anything that has a name and value.
-class Variable(object):
+class Variable():
     def __init__(self, node):
         self.name = node.getAttribute("name")
         self.value = utils.node_get_string(node)
 
-class Meta(object):
+class Meta():
     def __init__(self, node):
         self.prefixes = {}
 
@@ -235,7 +235,7 @@ class Meta(object):
 
 class Binary(Path):
     def __init__(self, source, dest=None, recurse=False):
-        super(Binary, self).__init__(source, dest, recurse)
+        super().__init__(source, dest, recurse)
         self.bundledir = 'Resources'
 
     def copy_file(self, project, source, dest):
@@ -243,7 +243,7 @@ class Binary(Path):
         # Skip static libs and libtool files:
         if ext in ('.la', '.a'):
             return
-        super(Binary, self).copy_file(project, source, dest)
+        super().copy_file(project, source, dest)
         if os.path.isdir(dest):
             dest = os.path.join(dest, os.path.split(source)[1])
         # print(f"Copy binary file {source} to "
@@ -259,12 +259,12 @@ class Binary(Path):
             source = self.source
             self.source = os.path.join(source, '*.so')
             self.recurse = True
-            super(Binary, self).copy_target(project)
+            super().copy_target(project)
             self.source = os.path.join(source, '*.dylib')
-            super(Binary, self).copy_target(project)
+            super().copy_target(project)
             self.source = source
         else:
-            super(Binary, self).copy_target(project)
+            super().copy_target(project)
         return self.destinations
 
     def fix_rpaths(self, project, target, frameworks = None):
@@ -318,7 +318,7 @@ class Framework(Binary):
     def __init__(self, source, recurse):
         (dummy_head, tail) = os.path.split(source)
         dest = "${bundle}/Contents/Frameworks/" + tail
-        super(Framework, self).__init__(source, dest, recurse)
+        super().__init__(source, dest, recurse)
         self.bundledir = "Frameworks"
 
     def get_name(self):
@@ -344,7 +344,7 @@ class Framework(Binary):
 
 class Translation(Path):
     def __init__(self, name, sourcepath, destpath, recurse):
-        super(Translation, self).__init__(sourcepath, destpath, recurse)
+        super().__init__(sourcepath, destpath, recurse)
         self.name = name
 
     def copy_target(self, project):
@@ -369,7 +369,7 @@ class Translation(Path):
 
 class GirFile(Path):
     def __init__(self, sourcepath, destpath, recurse):
-        super(GirFile, self).__init__(sourcepath, destpath, recurse)
+        super().__init__(sourcepath, destpath, recurse)
         self.bundle_path = '@executable_path/../Resources/lib'
 
     def copy_girfile(self, project, gir_dest, typelib_dest, lib_path):
@@ -414,7 +414,7 @@ class IconTheme(Path):
     ICONS_NONE, ICONS_ALL, ICONS_AUTO = list(range(3))
 
     def __init__(self, name, icons = "all"):
-        super(IconTheme, self).__init__("${prefix}/share/icons/" + name)
+        super().__init__("${prefix}/share/icons/" + name)
         self.name = name
         if icons == "all":
             self.icons = IconTheme.ICONS_ALL
@@ -428,7 +428,7 @@ class IconTheme(Path):
     def copy_target(self, project):
         source_base = self.source
         self.source = os.path.join(self.source, "index.theme")
-        super(IconTheme, self).copy_target(project)
+        super().copy_target(project)
         self.source = source_base
 
     def enumerate_icons(self, project):
@@ -469,7 +469,7 @@ class IconTheme(Path):
 
 
 
-class Project(object):
+class Project():
     def __init__(self, project_path=None):
         if not os.path.isabs(project_path):
             project_path = os.path.join(os.getcwd(), project_path)

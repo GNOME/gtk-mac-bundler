@@ -4,22 +4,22 @@ if __name__ == "__main__" and __package__ is None:
 
 import unittest
 import os
-from .project_test import Project_Test
+from .project_test import ProjectTest
 
 def setProjects( goodpath, badpath):
     if not os.path.isabs(goodpath):
         goodpath = os.path.join(os.getcwd(), goodpath)
     f = open(goodpath)
-    Project_Test.goodxml = f.read()
+    ProjectTest.goodxml = f.read()
     f.close()
-    Project_Test.goodpath = goodpath
+    ProjectTest.goodpath = goodpath
     if not os.path.isabs(badpath):
         badpath = os.path.join(os.getcwd(), badpath)
     f = open(badpath)
-    Project_Test.badxml = f.read()
+    ProjectTest.badxml = f.read()
     f.close()
-    Project_Test.badpath = badpath
+    ProjectTest.badpath = badpath
  
 setProjects("test/goodproject.bundle", "test/badproject.bundle")
-suite = unittest.TestLoader().loadTestsFromTestCase(Project_Test)
+suite = unittest.TestLoader().loadTestsFromTestCase(ProjectTest)
 unittest.TextTestRunner(verbosity=2).run(suite)

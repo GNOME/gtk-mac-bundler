@@ -11,7 +11,7 @@ from packaging.version import Version as V
 from .project import Binary, Path, Project
 from . import utils
 
-class Bundler(object):
+class Bundler():
     def __init__(self, project):
         self.project = project
 

@@ -8,7 +8,7 @@ from plistlib import load as plist_load
 from .project import Project
 from . import utils
 
-class Mock_Project(Project):
+class MockProject(Project):
 
     def __init__(self, testxml, path):
         super().__init__(path)
@@ -30,25 +30,25 @@ class Mock_Project(Project):
             else:
                 raise
 
-class Project_Test(unittest.TestCase):
+class ProjectTest(unittest.TestCase):
 
     def setUp(self):
-        self.goodproject = Mock_Project(Project_Test.goodxml,
-                                        Project_Test.goodpath)
-        self.badproject = Mock_Project(Project_Test.badxml,
-                                       Project_Test.badpath)
+        self.goodproject = MockProject(ProjectTest.goodxml,
+                                        ProjectTest.goodpath)
+        self.badproject = MockProject(ProjectTest.badxml,
+                                       ProjectTest.badpath)
 
     def test_a_get_project_path(self):
         path = self.goodproject.get_project_path()
-        self.failUnlessEqual(path, Project_Test.goodpath,
-                             f'Project returned incorrect project path {path} wanted {Project_Test.goodpath}')
+        self.failUnlessEqual(path, ProjectTest.goodpath,
+                             f'Project returned incorrect project path {path} wanted {ProjectTest.goodpath}')
         path = self.badproject.get_project_path()
-        self.failUnlessEqual(path, Project_Test.badpath,
+        self.failUnlessEqual(path, ProjectTest.badpath,
                              f'Project returned incorrect bad project path {path}')
 
     def test_b_get_project_dir(self):
         dir = self.goodproject.get_project_dir()
-        good_dir, dummy_tail = os.path.split(Project_Test.goodpath)
+        good_dir, dummy_tail = os.path.split(ProjectTest.goodpath)
         self.failUnlessEqual(dir, good_dir,
                              f'Project returned incorrect project dir {dir}')
 
@@ -77,7 +77,7 @@ class Project_Test(unittest.TestCase):
             self.fail("Goodproject didn't set the default prefix")
         except Exception:
             self.fail("Goodproject didn't set the plist tag")
-        dir, dummy_tail = os.path.split(Project_Test.goodpath)
+        dir, dummy_tail = os.path.split(ProjectTest.goodpath)
         self.failUnlessEqual(path,
                              os.path.join(dir, "test.plist"),
                              f'Bad Plist Path {path}')
