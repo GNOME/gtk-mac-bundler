@@ -48,7 +48,7 @@ class Project_Test(unittest.TestCase):
 
     def test_b_get_project_dir(self):
         dir = self.goodproject.get_project_dir()
-        good_dir, tail = os.path.split(Project_Test.goodpath)
+        good_dir, dummy_tail = os.path.split(Project_Test.goodpath)
         self.failUnlessEqual(dir, good_dir,
                              f'Project returned incorrect project dir {dir}')
 
@@ -77,7 +77,7 @@ class Project_Test(unittest.TestCase):
             self.fail("Goodproject didn't set the default prefix")
         except Exception:
             self.fail("Goodproject didn't set the plist tag")
-        dir, tail = os.path.split(Project_Test.goodpath)
+        dir, dummy_tail = os.path.split(Project_Test.goodpath)
         self.failUnlessEqual(path,
                              os.path.join(dir, "test.plist"),
                              f'Bad Plist Path {path}')

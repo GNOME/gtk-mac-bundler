@@ -286,11 +286,11 @@ class Bundler(object):
             try:
                 if os.path.isdir(path):
                     print (f'Recursing down copied binary path {path}.')
-                    for root, dirs, files in os.walk(path):
+                    for root, dummy_dirs, files in os.walk(path):
                         paths.extend([os.path.join(root, l) for l in files])
                 else:
                     paths.append(path)
-            except TypeError as err:
+            except TypeError:
                 if isinstance(path, Path):
                     print(f'Warning, Path object for {path.source} in copied binaries list.')
                 else:
@@ -349,12 +349,12 @@ class Bundler(object):
                     source = path.compute_source_path(self.project)
                     if path.is_source_glob():
                         dir, pattern = os.path.split(source)
-                        for root, dirs, files in os.walk(dir):
+                        for root, dummy_dirs, dummy_files in os.walk(dir):
                             for item in glob.glob(os.path.join(root, pattern)):
                                 if os.path.isfile(os.path.join(root, item)):
                                     binaries.append(os.path.join(root, item))
                     elif os.path.isdir(source):
-                        for root, dirs, files in os.walk(source):
+                        for root, dummy_dirs, dummy_files in os.walk(source):
                             for item in glob.glob(os.path.join(root, '*.so')):
                                 binaries.append(os.path.join(root, item))
                             for item in glob.glob(os.path.join(root, '*.dylib')):

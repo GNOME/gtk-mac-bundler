@@ -91,7 +91,7 @@ class Path(object):
 
         return True
 
-    def copy_file(self, project, source, dest):
+    def copy_file(self, dummy_project, source, dest):
         try:
             # print(f'Copying {source} to {dest}')
             shutil.copy2(source, dest)
@@ -106,7 +106,7 @@ class Path(object):
 
     def copy_target_glob_recursive(self, project, source, dest):
         source_parent, source_tail = os.path.split(source)
-        for root, dirs, files in os.walk(source_parent):
+        for root, dummy_dirs, dummy_files in os.walk(source_parent):
             destdir = os.path.join(dest, os.path.relpath(root, source_parent))
             glob_list = glob.glob(os.path.join(root, source_tail))
             if not glob_list:
@@ -117,7 +117,7 @@ class Path(object):
                     self.copy_file(project, globbed_source, destdir)
 
     def copy_target_recursive(self, project, source, dest):
-        for root, dirs, files in os.walk(source):
+        for root, dummy_dirs, files in os.walk(source):
             destdir = os.path.join(dest, os.path.relpath(root, source))
             if not files:
                 continue
@@ -147,7 +147,8 @@ class Path(object):
                 relative_dest = project.evaluate_path(self.source[m.end():])
                 dest = project.get_bundle_path(pathdir, relative_dest)
             else:
-                raise ValueError (f'Invalid path, missing or invalid dest {self.dest}')
+                raise ValueError (f'Invalid path, missing or invalid dest'
+                                  '{self.dest}')
         # If the destination has a wildcard as last component (copied
         # from the source in dest-less paths), ignore the tail.
         (dest_parent, dest_tail) = os.path.split(dest)
@@ -160,7 +161,7 @@ class Path(object):
 
     def is_source_glob(self):
         p = re.compile("[*?]")
-        (source_parent, source_tail) = os.path.split(self.source)
+        (dummy_source_parent, source_tail) = os.path.split(self.source)
         if p.search(source_tail):
             return True
         return False
@@ -238,7 +239,7 @@ class Binary(Path):
         self.bundledir = 'Resources'
 
     def copy_file(self, project, source, dest):
-        path, ext = os.path.splitext(source)
+        dummy_path, ext = os.path.splitext(source)
         # Skip static libs and libtool files:
         if ext in ('.la', '.a'):
             return
@@ -252,7 +253,7 @@ class Binary(Path):
         self.sign(project, dest)
         self.destinations.append(dest)
 
-    def copy_target(self, project, log = False):
+    def copy_target(self, project, dummy_log = False):
         self.destinations = []
         if os.path.isdir(self.compute_source_path(project)):
             source = self.source
@@ -315,13 +316,13 @@ class Binary(Path):
 
 class Framework(Binary):
     def __init__(self, source, recurse):
-        (head, tail) = os.path.split(source)
+        (dummy_head, tail) = os.path.split(source)
         dest = "${bundle}/Contents/Frameworks/" + tail
         super(Framework, self).__init__(source, dest, recurse)
         self.bundledir = "Frameworks"
 
     def get_name(self):
-        fwname, fwext = os.path.splitext(os.path.basename(self.dest))
+        fwname, dummy_ext = os.path.splitext(os.path.basename(self.dest))
         return fwname
 
     def get_bundle_name(self):
@@ -360,7 +361,7 @@ class Translation(Path):
         if source == None:
                 raise ValueError(f'Failed to parse {self.name} translation source!')
         prefix = project.get_prefix()
-        for root, trees, files in os.walk(source):
+        for root, dummy_trees, files in os.walk(source):
             for file in filter(name_filter, files):
                 path = os.path.join(root, file)
                 Path("${prefix}" + path[len(prefix):], self.dest).copy_target(project)
@@ -374,8 +375,8 @@ class GirFile(Path):
     def copy_girfile(self, project, gir_dest, typelib_dest, lib_path):
 
         def transform_file(filename):
-            path, fname = os.path.split(filename)
-            name, ext = os.path.splitext(fname)
+            dummy_path, fname = os.path.split(filename)
+            name, dummy_ext = os.path.splitext(fname)
 
             with open (filename, "r", encoding="utf8") as source:
                 lines = source.readlines()
@@ -388,7 +389,7 @@ class GirFile(Path):
                         if subs:
                             target.write(new_line)
                         else:
-                            (car, cadr, cddr) = re.split('"', line, 2)
+                            (car, cadr, dummy_cddr) = re.split('"', line, 2)
                             new_line = "".join([car, '"', os.path.join(self.bundle_path, cadr), '"'])
                             target.write(new_line)
                     else:
@@ -434,7 +435,7 @@ class IconTheme(Path):
         all_icons = set()
         if self.icons == IconTheme.ICONS_NONE:
             return all_icons
-        for root, dirs, files in os.walk(project.evaluate_path(self.source)):
+        for dummy_root, dummy_dirs, files in os.walk(project.evaluate_path(self.source)):
             for f in files:
                 (head, tail) = os.path.splitext(f)
                 if tail in [".png", ".svg"]:
@@ -445,14 +446,14 @@ class IconTheme(Path):
         if self.icons == IconTheme.ICONS_NONE:
             return
         prefix = project.get_prefix()
-        for root, dirs, files in os.walk(project.evaluate_path(self.source)):
+        for root, dummy_dirs, files in os.walk(project.evaluate_path(self.source)):
             for f in files:
                 # Go through every file, if it matches the icon
                 # set, copy it.
-                (head, tail) = os.path.splitext(f)
+                (head, dummy_tail) = os.path.splitext(f)
 
                 if head.endswith('.symbolic'):
-                    (head, tail) = os.path.splitext(head)
+                    (head, dummy_tail) = os.path.splitext(head)
 
                 if head in used_icons or self.icons == IconTheme.ICONS_ALL:
                     path = os.path.join(root, f)
@@ -487,7 +488,7 @@ class Project(object):
             raise Exception("Unable to load the root node.")
         # The directory the project file is in (as opposed to
         # project_path which is the path including the filename).
-        self.project_dir, tail = os.path.split(project_path)
+        self.project_dir, dummy_tail = os.path.split(project_path)
         self.meta = self.get_meta()
         plist_path = self.get_plist_path()
         try:
