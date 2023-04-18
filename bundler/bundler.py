@@ -6,7 +6,6 @@ import shutil
 from subprocess import PIPE, Popen, run
 import sys
 import tempfile
-from packaging.version import Version as V
 
 from .project import Binary, Path, Project
 from . import utils
@@ -83,77 +82,6 @@ class Bundler():
             catalog = output.communicate()[0].splitlines()
             os.remove(temppath)
             return catalog
-
-    def create_pango_setup(self):
-        if utils.has_pkgconfig_module("pango") and \
-                not utils.has_pkgconfig_variable("pango", "pango_module_version"):
-            # Newer pango (>= 1.38) no longer has modules, skip this
-            # step in that case.
-            return
-
-        # Create a temporary pangorc file just for creating the
-        # modules file with the right modules.
-        module_version = utils.evaluate_pkgconfig_variables("${pkg:pango:pango_module_version}")
-        modulespath = self.project.get_bundle_path("Contents/Resources/lib/pango/" +
-                                                   module_version +
-                                                   "/modules/")
-
-        fd, tmp_filename = tempfile.mkstemp()
-        with os.fdopen(fd, "w", encoding='utf-8') as f:
-            f.write("[Pango]\n")
-            f.write("ModulesPath=" + modulespath)
-            f.write("\n")
-
-
-        env_var = "PANGO_RC_FILE"
-        f = self.run_module_catalog(env_var, tmp_filename, 'pango-querymodules')
-
-        path = self.project.get_bundle_path("Contents/Resources/etc/pango")
-        utils.makedirs(path)
-
-        if V(module_version) < V('1.8.0'):
-            prefix_path  = os.path.join("Contents", "Resources")
-        else:
-            prefix_path = os.path.join("Contents", "Resources", "lib", "pango",
-                                       module_version, "modules/")
-
-        prefix = self.project.get_bundle_path(prefix_path)
-
-        with open(os.path.join(path, "pango.modules"), "w", encoding='utf-8') as fout:
-            for line in f:
-                line = line.encode('utf-8')
-                line = line.strip()
-                if line.startswith("# ModulesPath"):
-                    continue
-
-                # Replace the hardcoded bundle path with @executable_path...
-                if line.startswith(prefix):
-                    line = line[len(prefix):]
-                #Newer versions of pango have been modified to look in
-                #the right place for modules (providing the
-                #PANGO_LIB_DIR is set to point to the bundle_lib
-                #folder).
-                if V(module_version) < V('1.8.0'):
-                    line = "@executable_path/../Resources" + line
-
-                fout.write(line)
-                fout.write("\n")
-
-        os.unlink(tmp_filename)
-
-        # Create the final pangorc file
-        path = self.project.get_bundle_path("Contents/Resources/etc/pango")
-        utils.makedirs(path)
-        with open(os.path.join(path, "pangorc"), "w", encoding='utf-8') as fout:
-            fout.write("[Pango]\n")
-            #Pango 2.32 (corresponding to module_version 1.8.0) and
-            #later don't interpret "./" to mean the same directory
-            #that the rc file is in, so this doesn't work any
-            #more. However, pango does know to look in the bundle
-            #directory (when given the right environment variable), so
-            #we don't need this, either.
-            if V(module_version) < V('1.8.0'):
-                fout.write("ModuleFiles=./pango.modules\n")
 
     def create_gtk_immodules_setup(self):
         path = self.project.get_bundle_path("Contents/Resources")
@@ -498,7 +426,6 @@ class Bundler():
 
         self.copy_icon_themes()
 
-        self.create_pango_setup()
         self.create_gtk_immodules_setup()
         self.create_gdk_pixbuf_loaders_setup()
 
