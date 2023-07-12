@@ -5,7 +5,6 @@ import re
 import shutil
 from subprocess import PIPE, Popen, run
 import sys
-import tempfile
 
 from .project import Binary, Path, Project
 from . import utils
@@ -120,8 +119,6 @@ class Bundler():
                 fout.write("\n")
 
     def create_gdk_pixbuf_loaders_setup(self):
-        modulespath = ""
-        cachepath = ""
         if os.path.exists(os.path.join(self.project.get_prefix(), "lib",
                                        "gdk-pixbuf-2.0")):
 
@@ -432,8 +429,6 @@ class Bundler():
         main_binary_path.copy_target(self.project)
 
         launcher_script = self.project.get_launcher_script()
-        if launcher_script:
-            path = launcher_script.copy_target(self.project)
 
         if self.meta.overwrite:
             self.recursive_rm(final_path)
