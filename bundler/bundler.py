@@ -429,6 +429,8 @@ class Bundler():
         main_binary_path.copy_target(self.project)
 
         launcher_script = self.project.get_launcher_script()
+        if launcher_script:
+            launcher_script.copy_target(self.project)
 
         if self.meta.overwrite:
             self.recursive_rm(final_path)
