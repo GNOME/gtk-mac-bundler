@@ -16,9 +16,8 @@
   <license rdf:resource="http://usefulinc.com/doap/licenses/gpl" />
   <bug-database rdf:resource="https://gitlab.gnome.org/GNOME/gtk-mac-bundler/issues/" />
   <download-page rdf:resource="https://sourceforge.net/projects/gtk-osx/files/" />
-  <mailing-list rdf:resource="http://mail.gnome.org/mailman/listinfo/gtk-osx-users-list" />
-  <mailing-list rdf:resource="http://mail.gnome.org/mailman/listinfo/gtk-osx-devel-list" />
-
+  <developer-forum rdf:resource="https://discourse.gnome.org/tag/gtk" />
+  <support-forum rdf:resource="https://discourse.gnome.org/tag/gtk" />
 
   <programming-language>C</programming-language>
 
