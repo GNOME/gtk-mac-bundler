@@ -145,15 +145,4 @@
     ${project}/settings.ini
   </data>
 
-  <data>
-    ${prefix}/share/doc/gramps/*
-  </data>
-  
-  <data>
-    ${prefix}/share/doc/gramps/example/gedcom/sample.ged
-  </data>
-
-  <data>
-    ${prefix}/share/doc/gramps/example/gramps/*
-  </data>
 </app-bundle>
