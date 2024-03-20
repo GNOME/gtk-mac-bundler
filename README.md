@@ -262,7 +262,7 @@ the file.
 
 To build `python-launcher.c`, start a jhbuild shell for your target and run:
 
-    gcc -L$PREFIX/lib `python-config --cflags --ldflags` -o $PREFIX/bin/your-launcher \path/to/gtk-mac-bundler/examples/python-launcher.c
+    gcc -L$PREFIX/lib `python-config --cflags --ldflags --embed` -o $PREFIX/bin/your-launcher \path/to/gtk-mac-bundler/examples/python-launcher.c
 
 Remove the `<launcher-script>` element from your bundle file and change
 the main-binary element to:
