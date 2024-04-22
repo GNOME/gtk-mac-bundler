@@ -624,12 +624,16 @@ class Project():
     def get_gtk_version(self):
         if self.meta.gtk == "gtk+-3.0":
             return "3.0"
+        if self.meta.gtk == "gtk4":
+            return "4.0"
 
         return "2.0"
 
     def get_gtk_dir(self):
         if self.meta.gtk == "gtk+-3.0":
             return "gtk-3.0"
+        if self.meta.gtk == "gtk4":
+            return "gtk-4.0"
 
         return "gtk-2.0"
 
