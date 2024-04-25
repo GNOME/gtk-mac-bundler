@@ -48,7 +48,7 @@
        this bundle file is located. The application name and bundle
        identifier are taken from the plist file.
   -->
-  <plist>${project}/Info-gtk-demo.plist</plist>
+  <plist>${project}/Info-gtk3-demo.plist</plist>
 
   <main-binary>${prefix}/bin/gtk3-demo</main-binary>
 
