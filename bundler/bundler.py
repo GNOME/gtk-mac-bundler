@@ -423,7 +423,9 @@ class Bundler():
 
         self.copy_icon_themes()
 
-        self.create_gtk_immodules_setup()
+        if self.meta.gtk != 'gtk4':
+            self.create_gtk_immodules_setup()
+
         self.create_gdk_pixbuf_loaders_setup()
 
         main_binary_path.copy_target(self.project)
