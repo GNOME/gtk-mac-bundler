@@ -385,8 +385,8 @@ class GirFile(Path):
                         if subs:
                             target.write(new_line)
                         else:
-                            (car, cadr, dummy_cddr) = re.split('"', line, 2)
-                            new_line = "".join([car, '"', os.path.join(self.bundle_path, cadr), '"'])
+                            libs = re.split('[",]', line)
+                            new_line = libs[0] + '"' +  ",".join(map(lambda lib: os.path.join(self.bundle_path, lib), libs[1:-1])) + '"'
                             target.write(new_line)
                     else:
                         target.write(line)
