@@ -22,6 +22,8 @@
 #include <CoreFoundation/CoreFoundation.h>
 #include <sys/syslimits.h>
 
+#define PYLIB "/lib/python3.13"
+
 static wchar_t*
 widen_cfstring(CFStringRef str)
 {
@@ -48,6 +50,17 @@ widen_cfstring(CFStringRef str)
 	buf[i] = unibuf[i];
     free(unibuf);
     return buf;
+}
+
+static inline void
+check_status(PyConfig* config, PyStatus status)
+{
+  if (PyStatus_Exception(status))
+    {
+      if (config)
+        PyConfig_Clear(config);
+      Py_ExitStatusException(status);
+    }
 }
 
 static CFStringRef
@@ -78,27 +91,38 @@ get_bundle_dir(void)
 }
 
 static void
-set_python_path(void)
+set_python_path(PyConfig *config)
 {
     CFBundleRef bundle = CFBundleGetMainBundle();
     CFURLRef bundle_url = CFBundleCopyResourcesDirectoryURL(bundle);
     CFMutableStringRef mstr;
     wchar_t *path;
     CFStringRef str = make_filesystem_string(bundle_url);
+    CFIndex base_length, curr_length;
+
     CFRelease(bundle_url);
-    mstr = CFStringCreateMutableCopy(NULL, 5 * PATH_MAX, str);
-    CFStringAppendCString(mstr, "/lib/python3.11:",
-			  kCFStringEncodingUTF8);
-    CFStringAppend(mstr, str);
-    CFStringAppendCString(mstr, "/lib/python3.11/lib-dynload:",
-			  kCFStringEncodingUTF8);
-    CFStringAppend(mstr, str);
-    CFStringAppendCString(mstr, "/lib/python3.11/site-packages",
-			  kCFStringEncodingUTF8);
+    mstr = CFStringCreateMutableCopy(NULL, PATH_MAX, str);
     CFRelease(str);
+    CFStringAppendCString(mstr, PYLIB,
+                          kCFStringEncodingUTF8);
+    base_length = CFStringGetLength(mstr);
+    path = widen_cfstring(mstr);
+    check_status(config, PyWideStringList_Insert(&config->module_search_paths, 0, path));
+    free (path);
+    CFStringAppendCString(mstr, "/lib-dynload",
+                          kCFStringEncodingUTF8);
+    path = widen_cfstring(mstr);
+    check_status(config, PyWideStringList_Insert(&config->module_search_paths, 1, path));
+    free (path);
+    curr_length = CFStringGetLength(mstr);
+    CFStringDelete(mstr, CFRangeMake(base_length, curr_length - base_length));
+    CFStringAppendCString(mstr, "/site-packages",
+                          kCFStringEncodingUTF8);
     path = widen_cfstring(mstr);
     CFRelease(mstr);
-    Py_SetPath(path);
+    check_status(config, PyWideStringList_Insert(&config->module_search_paths, 2, path));
+    free (path);
+    config->module_search_paths_set = 1;
 }
 
 static wchar_t*
@@ -137,37 +161,49 @@ open_scriptfile(void)
     return fd;
 }
 
+static void
+set_command_args(PyConfig* config, int argc, char **argv)
+{
+  wchar_t *wargv;
+  wargv = get_bundle_dir();
+  check_status(config, PyWideStringList_Insert(&config->argv, 0, wargv));
+  free(wargv);
+  for (int i = 1; i < argc; ++i)
+    {
+      if (strncmp(argv[i], "-psn", 4) == 0)
+        {
+          for (int j = i; j < argc; ++j)
+            argv[j] = argv[j+1];
+          --argc;
+        }
+      wargv = widen_c_string(argv[i]);
+      check_status(config, PyWideStringList_Insert(&config->argv, i, wargv));
+      free (wargv);
+    }
+  config->parse_argv = 0;
+}
+
 int
 main(int argc, char *argv[])
 {
-    int retval = 0, i;
-    wchar_t **wargv = malloc(sizeof(wchar_t*) * argc);
-    FILE *fd = open_scriptfile();
-    if (fd == NULL)
+  int retval = 0;
+  FILE *fd = open_scriptfile();
+  PyConfig config;
+
+  if (fd == NULL)
     {
-	return -1;
+      return -1;
     }
-    set_python_path();
-    setenv("PYTHONOPTIMIZE", "yes", 0);
-    Py_Initialize();
-    wargv[0] = get_bundle_dir();
-    for (i = 1; i < argc; ++i) {
-	if (strncmp(argv[i], "-psn", 4) == 0) {
-	    int j;
-	    for (j = i; j < argc; ++j)
-		argv[j] = argv[j+1];
-	    --argc;
-	}
-	wargv[i] = widen_c_string(argv[i]);
-    }
-    PySys_SetArgvEx(argc, wargv, 0);
-    retval = PyRun_SimpleFile(fd, "");
-    if (retval != 0)
-	printf ("Run Simple File returned %d\n", retval);
-    Py_Finalize();
-    fclose(fd);
-    for (i = 0; i < argc; ++i)
-	free(wargv[i]);
-    free(wargv);
-    return 0;
+
+  PyConfig_InitPythonConfig(&config);
+  set_python_path(&config);
+  config.optimization_level = 1;
+  set_command_args(&config, argc, argv);
+  check_status(&config, Py_InitializeFromConfig(&config));
+  retval = PyRun_SimpleFile(fd, "");
+  if (retval != 0)
+    printf ("Run Simple File returned %d\n", retval);
+  Py_Finalize();
+  fclose(fd);
+  return 0;
 }
