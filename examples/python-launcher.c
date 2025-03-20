@@ -101,6 +101,9 @@ set_python_path(PyConfig *config)
     CFIndex base_length, curr_length;
 
     CFRelease(bundle_url);
+    path = widen_cfstring(str);
+    check_status(config, PyConfig_SetString(config, &config->home, path));
+    free(path);
     mstr = CFStringCreateMutableCopy(NULL, PATH_MAX, str);
     CFRelease(str);
     CFStringAppendCString(mstr, PYLIB,
