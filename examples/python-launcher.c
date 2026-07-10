@@ -22,7 +22,7 @@
 #include <CoreFoundation/CoreFoundation.h>
 #include <sys/syslimits.h>
 
-#define PYLIB "/lib/python3.13"
+#define PYLIB "/lib/python3.14"
 
 static wchar_t*
 widen_cfstring(CFStringRef str)
